@@ -1,6 +1,4 @@
 import mysql from 'mysql2';
-
-
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'omar',
@@ -8,10 +6,7 @@ const pool = mysql.createPool({
   database: 'real_state'
 });
 
-
 const promisePool = pool.promise();
-
-
 pool.getConnection((err, connection) => {
   if (err) {
     console.error('Error connecting to the database:', err);

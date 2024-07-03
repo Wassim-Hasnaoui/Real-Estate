@@ -80,4 +80,12 @@ const getProducts = async (): Promise<Product[]> => {
         users_userID:row.users_userID
     })) as Product[];
 };
-export { getProducts,getImagesByProductID, getProductByID, Product };
+const deleteProduct = async (productID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>('DELETE FROM products WHERE productID = ?', [productID]);
+
+};
+
+const deleteImagesOfProduct = async (productID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>('DELETE FROM images_product WHERE productID = ?', [productID]);
+};
+export { getProducts,getImagesByProductID, getProductByID, Product,deleteProduct,deleteImagesOfProduct };

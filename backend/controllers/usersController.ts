@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createUser, findUserByEmail, User } from '../models/modelUsers';
+import { createUser,findUserByEmail,User } from '../models/modelUsers';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-
-
 const generateToken = (userID: number) => {
   return jwt.sign({ userID }, process.env.JWT_SECRET as string);
 };
@@ -15,6 +12,7 @@ const generateToken = (userID: number) => {
 const register = async (req: Request, res: Response) => {
   try {
     const { userName, email, password, image, phone } = req.body;
+console.log("reqbody is",req.body);
 
 
     const userExists = await findUserByEmail(email);

@@ -1,5 +1,6 @@
 import pool from '../dbConfig/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { Product } from './modelProducts';
 
 interface User {
   userID?: number;

@@ -25,5 +25,11 @@ const findUserByEmail = async (email: string): Promise<User | null> => {
   }
   return rows[0] as User;
 };
-
-export { createUser, findUserByEmail, User };
+const getOneUserByID = async (userID: string): Promise<User | null> => {
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE userID = ?', [userID]);
+    if (rows.length === 0) {
+      return null;
+    }
+    return rows[0] as User;
+  };
+export { createUser, findUserByEmail, User ,getOneUserByID};

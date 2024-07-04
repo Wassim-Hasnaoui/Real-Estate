@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createUser,findUserByEmail,User } from '../models/modelUsers';
+import { createUser,findUserByEmail,getOneUserByID,User } from '../models/modelUsers';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -65,5 +65,19 @@ const login = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const GetOneUserByID = async (req: Request, res: Response)=>{
+    const userId = req.body.userId;
+try{
+    const user = await getOneUserByID(userId);
+    if (!user) {
+      return res.status(400).json({ message: 'user not found' });
+    }
+    res.status(201).json({success:true,message:"logged success",user});
+}
+catch (error) {
+    console.log( error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
 
-export { register, login };
+export { register, login,GetOneUserByID };

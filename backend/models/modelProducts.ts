@@ -105,5 +105,13 @@ const getProductsOfUser = async (userID:Number): Promise<Product[]|null> => {
         users_userID:row.users_userID
     })) as Product[];
 };
+const updateCurrentStatusProductToSold = async (productID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['sold', productID]);
+};
+
+const updateCurrentStatusProductToRented = async (productID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['rented', productID]);
+};
 export { getProducts,getImagesByProductID, getProductByID, 
-    Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser };
+    Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser,
+    updateCurrentStatusProductToRented,updateCurrentStatusProductToSold };

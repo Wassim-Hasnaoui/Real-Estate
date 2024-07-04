@@ -7,27 +7,33 @@ interface AuthenticatedRequest extends Request {
 
 const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  console.log("Authorization Header:", authHeader); 
+
+  if (!authHeader) {
     return res.status(401).json({ success: false, message: 'Not authorized, login again' });
   }
 
-  try {
-   
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+  
+  const token = authHeader.split(' ')[1]; 
+  console.log("Token:", token); 
 
-   
-    if (typeof decoded.id !== 'number') {
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Not authorized, login again2' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
+    if (typeof decoded !== 'object' || !decoded.userID) {
       throw new Error('Invalid token payload');
     }
 
-   
-    req.userId = decoded.id;
-    console.log("The ID of the user is", req.userId);
+    req.body.userId = decoded.userID;
+    console.log("The ID of the user is", req.body.userId);
 
     next();
   } catch (error) {
-    console.log(error);
+    console.log('Token verification failed:', error);
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };

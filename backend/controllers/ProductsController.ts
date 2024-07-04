@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import {  getProductByID, getProducts, Product,getImagesByProductID
     ,deleteProduct,deleteImagesOfProduct,
-    getProductsOfUser
+    getProductsOfUser,
+    updateCurrentStatusProductToSold,
+    updateCurrentStatusProductToRented
  } from '../models/modelProducts';
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -50,7 +52,7 @@ export const DeleteProduct=async(req:Request,res:Response):Promise<void>=>{
     }
 }
 export const GetProductsOfUser=async(req:Request,res:Response):Promise<void>=>{
- const userID=parseInt(req.params.id)
+ const userID=req.body.userId
     try {
         console.log("userid is",userID);
         
@@ -59,5 +61,28 @@ export const GetProductsOfUser=async(req:Request,res:Response):Promise<void>=>{
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error });
+    
     }
 }
+
+export const UpdateProductCurrentStatusToSold = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        await updateCurrentStatusProductToSold(productID);
+        res.status(200).json({ success: true, message: 'Product status updated to sold' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
+};
+
+export const UpdateProductCurrentStatusToRented = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        await updateCurrentStatusProductToRented(productID);
+        res.status(200).json({ success: true, message: 'Product status updated to rented' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
+};

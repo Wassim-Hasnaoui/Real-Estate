@@ -6,7 +6,8 @@ import {  getProductByID, getProducts, Product,getImagesByProductID
     updateCurrentStatusProductToRented,
     updateProduct,
     findImageByURLAndProductID,
-    addImageForProduct
+    addImageForProduct,
+    deleteImageByID
  } from '../models/modelProducts';
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -142,3 +143,13 @@ export const updateProductController = async (req: Request, res: Response) => {
       res.status(500).json({ message: 'Error updating product', error });
     }
   };
+  export const DeleteImage=async(req:Request,res:Response):Promise<void>=>{
+    try {
+        const imageID = parseInt(req.params.imageID);
+      await deleteImageByID(imageID);    
+        res.status(200).json({ success:true,message: 'image  deleted successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error,success:false });
+    }
+  }

@@ -21,6 +21,7 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
             p.category,
             p.price,
             c.countryName,
+            c.countryID,
             p.status,
             p.current_status,
            p.users_userID
@@ -131,7 +132,10 @@ const updateProduct = async (productID: number, product: Product): Promise<void>
     const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE imageURL = ? AND productID=?', [imageURL,productID]);
     return rows.length > 0 ? (rows[0] as Images) : null;
   };
+  const deleteImageByID = async (imageID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>('DELETE FROM images_product WHERE productImageID = ?', [imageID]);
+};
 export { getProducts,getImagesByProductID, getProductByID, 
     Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser,
     updateCurrentStatusProductToRented,updateCurrentStatusProductToSold,
-    updateProduct,addImageForProduct,findImageByURLAndProductID };
+    updateProduct,addImageForProduct,findImageByURLAndProductID,deleteImageByID };

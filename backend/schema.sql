@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `real_state`.`products` (
   `price` INT NOT NULL,
   `countryID` INT NOT NULL,
   `status` ENUM('sale', 'rent') NOT NULL,
-  `current_status` ENUM('available', 'rented', 'sold') NOT NULL DEFAULT 'available',
+`current_status` ENUM('available', 'rented', 'sold') NOT NULL DEFAULT 'available',
   `users_userID` INT NOT NULL,
   PRIMARY KEY (`productID`),
   INDEX `countryID_idx` (`countryID` ASC) VISIBLE,

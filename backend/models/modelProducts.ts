@@ -11,7 +11,7 @@ interface Product {
     status: string;
     current_status: string;
     imageURL: string;
-    users_userID:Number;
+    userID:Number;
   }
 interface Images {
     productImageID:number; 
@@ -38,7 +38,7 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
             c.countryName,
             p.status,
             p.current_status,
-           p.users_userID
+           p.userID
         FROM
             products p
         JOIN 
@@ -57,7 +57,7 @@ const getProducts = async (): Promise<Product[]> => {
             c.countryName,
             p.status,
             p.current_status,
-            p.users_userID,
+            p.userID,
             (SELECT i.imageURL 
              FROM images_product i 
              WHERE i.productID = p.productID 
@@ -77,7 +77,7 @@ const getProducts = async (): Promise<Product[]> => {
         status: row.status,
         current_status: row.current_status,
         imageURL: row.imageURL,
-        users_userID:row.users_userID
+        userID:row.users_userID
     })) as Product[];
 };
 const deleteProduct = async (productID: number): Promise<void> => {

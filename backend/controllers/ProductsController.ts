@@ -11,9 +11,15 @@ export const fetchProducts = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ error: error });
     }
 };
-export const fetshOneProduct=async(req:Request,res:Response):Promise<void>=>{
+export const fetshOneProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const productID = parseInt(req.params.id)
+        const productID = parseInt(req.params.id, 10); // Parse `productID` as an integer with radix 10
+
+        if (isNaN(productID)) {
+            res.status(400).json({ message: 'Invalid product ID' });
+            return;
+        }
+
         const product = await getProductByID(productID);
 
         if (!product) {
@@ -24,10 +30,10 @@ export const fetshOneProduct=async(req:Request,res:Response):Promise<void>=>{
         const images = await getImagesByProductID(productID);
         res.status(200).json({ ...product, images });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: error });
+        console.error("Error fetching product:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-}
+};
 export const DeleteProduct=async(req:Request,res:Response):Promise<void>=>{
     try {
         const productID = parseInt(req.params.id);

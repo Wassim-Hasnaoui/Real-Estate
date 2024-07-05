@@ -2,12 +2,16 @@ import pool from '../dbConfig/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 
 interface User {
-  userID?: number;
+  userID: number;
+  UserID(UserID: any): unknown;
   userName: string;
   email: string;
   password: string;
-  image?: string;
-  phone: string;
+  phone?: string;
+  image?: {
+    secure_url: string;
+    public_id: string;
+  };
 }
 
 const createUser = async (user: User): Promise<ResultSetHeader> => {
@@ -25,4 +29,29 @@ const findUserByEmail = async (email: string): Promise<User | null> => {
   return rows[0] as User;
 };
 
-export { createUser, findUserByEmail, User };
+const deleteUserByID = async (userID: number): Promise<void> => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Delete associated images of products belonging to the user
+    await connection.query('DELETE i FROM images_product i JOIN products p ON i.productID = p.productID WHERE p.userID = ?', [userID]);
+
+    // Delete products belonging to the user
+    await connection.query('DELETE FROM products WHERE userID = ?', [userID]);
+    
+    // Finally, delete the user itself
+    await connection.query('DELETE FROM users WHERE userID = ?', [userID]);
+
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+
+
+export { createUser, findUserByEmail, deleteUserByID, User };

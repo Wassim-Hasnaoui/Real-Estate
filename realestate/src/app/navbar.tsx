@@ -13,6 +13,7 @@ const Navbar: React.FC = () => {
           <li><a href="/about" className="hover:underline">About</a></li>
           <li><a href="/signIn" className="hover:underline">signIn</a></li>
           <li><a href="/logIn" className="hover:underline">Log in</a></li>
+          <li><a href="/updateProduct" className="hover:underline">update</a></li>
         </ul>
       </nav>
     </header>

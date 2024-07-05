@@ -1,23 +1,8 @@
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import pool from '../dbConfig/db';
 
-interface Product {
-    productID: number;
-    productName: string;
-    description: string;
-    category: string;
-    price: number;
-    countryName: string;
-    status: string;
-    current_status: string;
-    imageURL: string;
-    users_userID:Number;
-  }
-interface Images {
-    productImageID:number; 
-  imageURL:string
-  productID:number
-  }
+import { Images } from '../types/image';
+import { Product } from '../types/product';
 const getImagesByProductID = async (productID: number): Promise<Images[]> => {
   const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE productID = ?', [productID]);
   return rows.map(row=>({
@@ -128,6 +113,25 @@ const updateCurrentStatusProductToSold = async (productID: number): Promise<void
 const updateCurrentStatusProductToRented = async (productID: number): Promise<void> => {
     await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['rented', productID]);
 };
+const updateProduct = async (productID: number, product: Product): Promise<void> => {
+    const { productName, description, category, price, status, current_status, countryID, users_userID } = product;
+    await pool.query<ResultSetHeader>(
+      `UPDATE products 
+       SET productName = ?, description = ?, category = ?, price = ?, status = ?, current_status = ?, countryID = ?, users_userID = ? 
+       WHERE productID = ?`,
+      [productName, description, category, price, status, current_status, countryID, users_userID, productID]
+    );
+  };
+  
+  const addImageForProduct = async (productID: number, imageURL: string): Promise<void> => {
+   await pool.query<ResultSetHeader>('INSERT INTO images_product (productID, imageURL) VALUES (?, ?)', [productID, imageURL]);
+  };
+  
+  const findImageByURLAndProductID = async (productID: number,imageURL: string): Promise<Images | null> => {
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE imageURL = ? AND productID=?', [imageURL,productID]);
+    return rows.length > 0 ? (rows[0] as Images) : null;
+  };
 export { getProducts,getImagesByProductID, getProductByID, 
     Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser,
-    updateCurrentStatusProductToRented,updateCurrentStatusProductToSold };
+    updateCurrentStatusProductToRented,updateCurrentStatusProductToSold,
+    updateProduct,addImageForProduct,findImageByURLAndProductID };

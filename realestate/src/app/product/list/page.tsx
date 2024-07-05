@@ -5,8 +5,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-export default function ListProduct(){
-  const [product,setProduct] = useState({
+export default function ListProduct() {
+  const [product, setProduct] = useState({
     productId: '',
     productName: '',
     description: '',

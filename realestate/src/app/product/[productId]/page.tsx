@@ -1,9 +1,7 @@
-"use client"; // Ensure this is at the top of the file
-
 import React, { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation'; // Use new hooks from next/navigation
+import { usePathname } from 'next/navigation'; // Import usePathname from next/navigation
+import axios from 'axios';
 import Navbar from '@/app/navbar'; // Adjust the path to your Navbar component
-import houses from '@/app/houses'; // Adjust the path to your houses data
 import { motion } from 'framer-motion';
 
 interface House {
@@ -20,19 +18,23 @@ interface House {
 
 const ProductDetails: React.FC = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const productId = pathname?.split('/').pop(); // Extract productId from the pathname
   const [product, setProduct] = useState<House | null>(null);
 
   useEffect(() => {
-    console.log("productId:", productId); // Add this log for debugging
-    console.log("houses data:", houses); // Add this log for debugging
-    if (productId) {
-      const selectedProduct = houses.find((item) => item.productId === productId);
-      if (selectedProduct) {
-        setProduct(selectedProduct);
+    const fetchProduct = async () => {
+      if (productId) {
+        try {
+          console.log("Fetching product with productId:", productId); // Debugging log
+          const response = await axios.get<House>(`http://localhost:5000/api/products/one/${productId}`);
+          setProduct(response.data);
+        } catch (error) {
+          console.error(`Error fetching product ${productId}:`, error);
+        }
       }
-    }
+    };
+
+    fetchProduct();
   }, [productId]);
 
   if (!product) {

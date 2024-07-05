@@ -1,7 +1,23 @@
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import pool from '../dbConfig/db';
-import { Product } from '../types/product';
-import { Images } from '../types/image';
+
+interface Product {
+    productID: number;
+    productName: string;
+    description: string;
+    category: string;
+    price: number;
+    countryName: string;
+    status: string;
+    current_status: string;
+    imageURL: string;
+    users_userID:Number;
+  }
+interface Images {
+    productImageID:number; 
+  imageURL:string
+  productID:number
+  }
 const getImagesByProductID = async (productID: number): Promise<Images[]> => {
   const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE productID = ?', [productID]);
   return rows.map(row=>({

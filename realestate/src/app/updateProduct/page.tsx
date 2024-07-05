@@ -8,22 +8,37 @@ const ProductUpdatePage = ({ productID }: { productID: number }) => {
   const [images, setImages] = useState<Images[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [formData, setFormData] = useState<Partial<Product>>({});
-
+  const fetchProduct = async () => {
+    try{
+      const response = await axios.get(`http://localhost:5000/api/products/one/${2}`);
+      setProduct(response.data);
+      setImages(response.data.images);
+    } catch (error) {
+      console.log('Error fetching product data:', error);
+    }
+  };
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/products/one/${2}`);
-        setProduct(response.data);
-        setImages(response.data.images);
-      } catch (error) {
-        console.log('Error fetching product data:', error);
-      }
-    };
+   
 
     fetchProduct();
   }, [productID]);
 
-  
+  const handleUploadImages = async () => {
+    const data = new FormData();
+    newImages.forEach(file => {
+      data.append('images', file);
+    });
+console.log("newimages",newImages);
+
+    try {
+await axios.post(`http://localhost:5000/api/products/add/images/${2}`,data);
+      fetchProduct();
+      alert('Images uploaded successfully');
+      setNewImages([]);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+    }
+  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -34,8 +49,6 @@ const ProductUpdatePage = ({ productID }: { productID: number }) => {
       setNewImages(Array.from(e.target.files));
     }
   };
-
-
   const handleDeleteImage = async (imageID: number) => {
     try {
       await axios.delete(`http://localhost:5000/api/products/delete/image/${imageID}`);
@@ -58,9 +71,7 @@ const ProductUpdatePage = ({ productID }: { productID: number }) => {
     data.append('countryID', (formData.countryID || '').toString());
     data.append('users_userID', (formData.users_userID || '').toString());
 
-    newImages.forEach(file => {
-      data.append('images', file);
-    });
+    
     console.log("data is ",data);
     
     try {
@@ -136,6 +147,7 @@ const ProductUpdatePage = ({ productID }: { productID: number }) => {
             multiple
             onChange={handleFileChange}
           />
+           <button type="button" onClick={handleUploadImages}>Upload Images</button>
           <button type="submit">Update Product</button>
         </form>
       )}

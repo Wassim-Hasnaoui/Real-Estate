@@ -99,8 +99,8 @@ export const UpdateProductCurrentStatusToRented = async (req: Request, res: Resp
 export const updateProductController = async (req: Request, res: Response) => {
     const productID = parseInt(req.params.productID);
     const productData = req.body;
-    const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
-  console.log("imagesfile",imageFiles);
+    
+  
   
     try {
       const existingProduct = await getProductByID(productID);
@@ -108,6 +108,8 @@ export const updateProductController = async (req: Request, res: Response) => {
         return res.status(404).json({ message: 'Product not found' });
       }
   
+     console.log("existproduct",existingProduct);
+     console.log("productdata",productData);
      
       const updatedProduct :Partial<Product> = {
         productName: productData.productName || existingProduct.productName,
@@ -119,24 +121,9 @@ export const updateProductController = async (req: Request, res: Response) => {
         countryID: productData.countryID || existingProduct.countryID,
         users_userID: productData.users_userID || existingProduct.users_userID,
       };
-
-      await updateProduct(productID,
-        
-        
-        updatedProduct);
-      if (imageFiles && imageFiles.images) {
-        for (const file of imageFiles.images) {
-          const imageURL = file.path; 
-  console.log("imageforloburl",imageURL);
-  
-          const existingImage = await findImageByURLAndProductID(productID, imageURL);
-         console.log("exist image",existingImage);
-         
-          if (!existingImage) {
-            await addImageForProduct(productID, imageURL);
-          }
-        }
-      }
+      console.log("updatedproduct",updatedProduct);
+      
+      await updateProduct(productID,updatedProduct);
   
       res.status(200).json({message:'Product updated successfully' });
     } catch (error) {
@@ -153,3 +140,35 @@ export const updateProductController = async (req: Request, res: Response) => {
         res.status(500).json({ error: error,success:false });
     }
   }
+
+  export const addImagesForProduct = async (req: Request, res: Response) => {
+    const productID = parseInt(req.params.productID);
+    
+    const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
+  console.log("imagesfile",imageFiles);
+  
+    try {
+      const existingProduct = await getProductByID(productID);
+      if (!existingProduct) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+     console.log("existproduct",existingProduct);
+
+      if (imageFiles && imageFiles.images) {
+        for (const file of imageFiles.images) {
+          const imageURL = file.path; 
+  console.log("imageforloburl",imageURL);
+          const existingImage = await findImageByURLAndProductID(productID, imageURL);
+         console.log("exist image",existingImage);
+   if (!existingImage) {
+            await addImageForProduct(productID, imageURL);
+          }
+        }
+      }
+  
+      res.status(200).json({message:'images added successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error adding image', error });
+    }
+  };

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `real_state`.`products` (
   `userID` INT NOT NULL,
   PRIMARY KEY (`productID`),
   INDEX `countryID_idx` (`countryID` ASC) VISIBLE,
-  INDEX `fk_products_users1_idx` (`users_userID` ASC) VISIBLE,
+  INDEX `fk_products_users1_idx` (`userID` ASC) VISIBLE,
   CONSTRAINT `countryID`
     FOREIGN KEY (`countryID`)
     REFERENCES `real_state`.`countrys` (`countryID`),
@@ -80,17 +80,17 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `real_state`.`images_product`;
 
-CREATE TABLE IF NOT EXISTS `real_state`.`product_images` (
+CREATE TABLE IF NOT EXISTS `real_state`.`images_product` (
   `imageID` INT NOT NULL AUTO_INCREMENT,
   `imageURL` VARCHAR(300) NOT NULL,
   `productID` INT NOT NULL,
   PRIMARY KEY (`imageID`),
-  CONSTRAINT `fk_product_images_products`
+  CONSTRAINT `fk_images_product_products`
     FOREIGN KEY (`productID`)
     REFERENCES `real_state`.`products` (`productID`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
-)
+);
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;

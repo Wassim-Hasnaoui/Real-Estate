@@ -1,118 +1,202 @@
+// models/modelProducts.ts
+
+import {
+  ResultSetHeader,
+  RowDataPacket,
+} from 'mysql2';
+
 import pool from '../dbConfig/db';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { Images } from '../types/image';
+import { Product } from '../types/product';
 
-interface Product {
-  productID?: number;
-  productName: string;
-  description: string;
-  category: string;
-  price: number;
-  countryName: string;
-  userName: string;
-  status: string;
-  current_status: string;
-  imageURLs?: string[]; // Optional array for storing multiple image URLs
-}
-
-interface Images {
-  productImageID?: number;
-  imageURL?: string;
-  productID?: number;
-}
-
-const getProductByID = async (productID: number): Promise<Product | null> => {
-  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM products WHERE productID = ?', [productID]);
-  return rows.length > 0 ? (rows[0] as Product) : null;
+const getImagesByProductID = async (productID: number): Promise<Images[]> => {
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE productID = ?', [productID]);
+  return rows.map(row => ({
+    productImageID: row.productImageID,
+    imageURL: row.imageURL,
+    productID: row.productID
+  })) as Images[];
 };
 
-const getProducts = async (): Promise<Product[]> => {
+const getProductByID = async (productID: number): Promise<Product | null> => {
   const [rows] = await pool.query<RowDataPacket[]>(`
-    SELECT 
+    SELECT
       p.productID,
       p.productName,
       p.description,
       p.category,
       p.price,
-      c.countryName,
+      c.countryID,
       p.status,
-      p.current_status
-    FROM 
+      p.current_status,
+      p.userID,
+      GROUP_CONCAT(i.imageURL) AS imageURLs
+    FROM
       products p
-    JOIN 
-      countrys c ON p.countryID = c.countryID;
+    LEFT JOIN images_product i ON p.productID = i.productID
+    JOIN countrys c ON p.countryID = c.countryID 
+    WHERE p.productID=?
+    GROUP BY p.productID;
+  `, [productID]);
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const firstRow = rows[0];
+  return {
+    productName: firstRow.productName,
+    description: firstRow.description,
+    category: firstRow.category,
+    price: firstRow.price,
+    status: firstRow.status,
+    current_status: firstRow.current_status,
+    countryID: firstRow.countryID,
+    userID: firstRow.userID,
+    imageURLs: firstRow.imageURLs ? firstRow.imageURLs.split(',') : []
+  };
+};
+
+const getProducts = async (): Promise<Product[]> => {
+  const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      p.productID,
+      p.productName,
+      p.description,
+      p.category,
+      p.price,
+      c.countryID,
+      p.status,
+      p.current_status,
+      p.userID,
+      GROUP_CONCAT(i.imageURL) AS imageURLs
+    FROM
+      products p
+    LEFT JOIN images_product i ON p.productID = i.productID
+    JOIN countrys c ON p.countryID = c.countryID 
+    GROUP BY p.productID;
   `);
-  return rows as Product[];
+
+  return rows.map(row => ({
+    productID: row.productID,
+    productName: row.productName,
+    description: row.description,
+    category: row.category,
+    price: row.price,
+    status: row.status,
+    current_status: row.current_status,
+    countryID: row.countryID,
+    userID: row.userID,
+    imageURLs: row.imageURLs ? row.imageURLs.split(',') : []
+  })) as Product[];
 };
 
-const getProductImagesByProductID = async (productID: number): Promise<Images[]> => {
-  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE productID = ?', [productID]);
-  return rows as Images[];
+const deleteProduct = async (productID: number): Promise<void> => {
+  await pool.query<ResultSetHeader>('DELETE FROM products WHERE productID = ?', [productID]);
 };
 
-const addNewProduct = async (product: Product): Promise<number> => {
-  const { productName, description, category, price, countryName, userName, status, current_status } = product;
+const deleteImagesOfProduct = async (productID: number): Promise<void> => {
+  await pool.query<ResultSetHeader>('DELETE FROM images_product WHERE productID = ?', [productID]);
+};
 
-  const connection = await pool.getConnection();
+const getProductsOfUser = async (userID: number): Promise<Product[]> => {
+  const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      p.productID,
+      p.productName,
+      p.description,
+      p.category,
+      p.price,
+      c.countryID,
+      p.status,
+      p.current_status,
+      GROUP_CONCAT(i.imageURL) AS imageURLs
+    FROM
+      products p
+    LEFT JOIN images_product i ON p.productID = i.productID
+    JOIN countrys c ON p.countryID = c.countryID 
+    WHERE p.userID=?
+    GROUP BY p.productID;
+  `, [userID]);
+
+  return rows.map(row => ({
+    productID: row.productID,
+    productName: row.productName,
+    description: row.description,
+    category: row.category,
+    price: row.price,
+    status: row.status,
+    current_status: row.current_status,
+    countryID: row.countryID,
+    userID: row.userID,
+    imageURLs: row.imageURLs ? row.imageURLs.split(',') : []
+  })) as Product[];
+};
+
+const updateCurrentStatusProductToSold = async (productID: number): Promise<void> => {
+  await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['sold', productID]);
+};
+
+const updateCurrentStatusProductToRented = async (productID: number): Promise<void> => {
+  await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['rented', productID]);
+};
+
+const updateProduct = async (productID: number, product: Partial<Product>): Promise<void> => {
+  const { productName, description, category, price, status, current_status, countryID, userID } = product;
+  await pool.query<ResultSetHeader>(
+    `UPDATE products 
+     SET productName = ?, description = ?, category = ?, price = ?, status = ?, current_status = ?, countryID = ?, userID = ? 
+     WHERE productID = ?`,
+    [productName, description, category, price, status, current_status, countryID, userID, productID]
+  );
+};
+
+
+
+const findImageByURLAndProductID = async (productID: number, imageURL: string): Promise<Images | null> => {
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE imageURL = ? AND productID=?', [imageURL, productID]);
+  return rows.length > 0 ? (rows[0] as Images) : null;
+};
+
+const addImageForProduct = async (productID: number, imageURL: string): Promise<void> => {
+  await pool.query<ResultSetHeader>('INSERT INTO images_product (productID, imageURL) VALUES (?, ?)', [productID, imageURL]);
+};
+
+const addProducts = async (product: Product): Promise<number> => {
   try {
-    await connection.beginTransaction();
+    // Begin transaction
+    await pool.query('START TRANSACTION');
 
-    const [productResult] = await connection.query<ResultSetHeader>(
-      'INSERT INTO products (productName, description, category, price, countryID, userID, status, current_status) VALUES (?, ?, ?, ?, (SELECT countryID FROM countrys WHERE countryName = ?), (SELECT userID FROM users WHERE userName = ?), ?, ?)',
-      [productName, description, category, price, countryName, userName, status, current_status]
+    // Insert product into products table
+    const [result] = await pool.query<ResultSetHeader>(
+      `INSERT INTO products (productName, description, category, price, countryID, status, current_status, userID) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [product.productName, product.description, product.category, product.price, product.countryID, product.status, product.current_status, product.userID]
     );
+    const productID = result.insertId;
 
-    const productID = productResult.insertId;
-    await connection.commit();
+    // Commit transaction
+    await pool.query('COMMIT');
 
-    return productID; // Return the newly inserted product ID
+    return productID;
   } catch (error) {
-    await connection.rollback();
+    // Rollback transaction on error
+    await pool.query('ROLLBACK');
     throw error;
-  } finally {
-    connection.release();
   }
 };
 
-const addProductImages = async (productID: number, imageURLs: string[]): Promise<void> => {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-
-    for (const imageURL of imageURLs) {
-      await connection.query<ResultSetHeader>(
-        'INSERT INTO images_product (productID, imageURL) VALUES (?, ?)',
-        [productID, imageURL]
-      );
-    }
-
-    await connection.commit();
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+export {
+  addImageForProduct,
+  addProducts,
+  deleteImagesOfProduct,
+  deleteProduct,
+  findImageByURLAndProductID,
+  getImagesByProductID,
+  getProductByID,
+  getProducts,
+  getProductsOfUser,
+  updateCurrentStatusProductToRented,
+  updateCurrentStatusProductToSold,
+  updateProduct,
 };
-
-
-const deleteProductByID = async (productID: number): Promise<void> => {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-
-    // Delete associated images first, if necessary
-    await connection.query('DELETE FROM images_product WHERE productID = ?', [productID]);
-
-    // Then delete the product itself
-    await connection.query('DELETE FROM products WHERE productID = ?', [productID]);
-
-    await connection.commit();
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
-};
-
-export { getProducts, getProductByID, getProductImagesByProductID, addNewProduct,addProductImages, deleteProductByID, Product, Images };

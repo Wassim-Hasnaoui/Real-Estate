@@ -1,103 +1,184 @@
-import { Response } from 'express';
-import { MulterRequest } from '../multermid/multerreq'; // Import MulterRequest interface
-import { getProducts, addNewProduct, getProductByID, deleteProductByID, getProductImagesByProductID } from '../models/modelProducts';
-import cloudinary from '../utils/cloudinary'; // Default import
-import { UploadApiResponse } from 'cloudinary';
+import {
+  Request,
+  Response,
+} from 'express';
 
-interface Product {
-  productName: string;
-  description: string;
-  category: string;
-  price: number;
-  countryName: string;
-  userName: string;
-  status: string;
-  current_status: string;
-  imageURLs: string[]; // Updated to store multiple image URLs
-}
+import {
+  addImageForProduct,
+  addProducts,
+  deleteImagesOfProduct,
+  deleteProduct,
+  getImagesByProductID,
+  getProductByID,
+  getProducts,
+  getProductsOfUser,
+  updateCurrentStatusProductToRented,
+  updateCurrentStatusProductToSold,
+  updateProduct,
+} from '../models/modelProducts';
+import { Product } from '../types/product';
+import multer from 'multer';
 
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const products = await getProducts();
-    res.status(200).json(products);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
+    try {
+        const products = await getProducts();
+        res.status(200).json(products);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
 };
 
-export const addProducts = async (req: MulterRequest, res: Response): Promise<void> => {
-  try {
-    const { productName, description, category, price, countryName, userName, status, current_status } = req.body;
+export const fetchOneProduct = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id); // Parse `productID` as an integer with radix 10
 
-    const imageURLs: string[] = [];
+        if (isNaN(productID)) {
+            res.status(400).json({ message: 'Invalid product ID' });
+            return;
+        }
 
-    // Add Cloudinary upload logic here
-    if (req.files && Array.isArray(req.files['images'])) {
-      const files = req.files['images'] as Express.Multer.File[];
+        const product = await getProductByID(productID);
 
-      for (const image of files) {
-        const uploadResult = await cloudinary.uploader.upload(image.path, {
-          folder: 'products',
-          public_id: `product_${productName}`,
-        });
+        if (!product) {
+            res.status(404).json({ message: 'Product not found' });
+            return;
+        }
 
-        imageURLs.push(uploadResult.secure_url);
-      }
+        const images = await getImagesByProductID(productID);
+        res.status(200).json({ ...product, images });
+    } catch (error) {
+        console.error("Error fetching product:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
+};
 
-    const newProduct: Product = {
+export const deleteProductController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        const product = await getProductByID(productID);
+        if (!product) {
+            res.status(404).json({ message: 'Product not found' });
+            return;
+        }
+
+        console.log("reach product", product);
+        await deleteImagesOfProduct(productID);
+        await deleteProduct(productID);
+
+        res.status(200).json({ success: true, message: 'Product and its images deleted successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error, success: false });
+    }
+};
+
+export const getProductsOfUserController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userID = parseInt(req.params.id); // Parse `userID` as an integer with radix 10
+        if (isNaN(userID)) {
+            res.status(400).json({ message: 'Invalid user ID' });
+            return;
+        }
+        const products = await getProductsOfUser(userID);
+        res.status(200).json(products);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
+};
+
+export const updateCurrentStatusProductToSoldController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        const product = await getProductByID(productID);
+        if (!product) {
+            res.status(404).json({ message: 'Product not found' });
+            return;
+        }
+
+        await updateCurrentStatusProductToSold(productID);
+        res.status(200).json({ success: true, message: 'Product status updated to sold successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error, success: false });
+    }
+};
+
+export const updateCurrentStatusProductToRentedController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        const product = await getProductByID(productID);
+        if (!product) {
+            res.status(404).json({ message: 'Product not found' });
+            return;
+        }
+
+        await updateCurrentStatusProductToRented(productID);
+        res.status(200).json({ success: true, message: 'Product status updated to rented successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error, success: false });
+    }
+};
+
+export const updateProductController = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        const product = await getProductByID(productID);
+        if (!product) {
+            res.status(404).json({ message: 'Product not found' });
+            return;
+        }
+
+        const updatedProduct: Partial<Product> = req.body;
+        await updateProduct(productID, updatedProduct);
+
+        res.status(200).json({ success: true, message: 'Product updated successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error, success: false });
+    }
+};
+
+export const createProductWithImages = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { productName, description, category, price, status, current_status, countryID, userID } = req.body;
+    const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
+  console.log("imagesfile",imageFiles);
+
+    // Log the image files array before mapping
+    console.log('Image files before mapping:', imageFiles);
+    // Create a new product object
+    const newProduct = {
       productName,
       description,
       category,
       price,
-      countryName,
-      userName,
       status,
       current_status,
-      imageURLs,
+      countryID,
+      userID,
     };
 
-    await addNewProduct(newProduct);
-    res.status(201).json({ message: 'Product added successfully' });
-  } catch (error) {
-    console.error('Error adding product:', error);
-    res.status(500).json({ error: 'Failed to add product' });
-  }
-};
+    // Add the product and get the inserted productID
+    const insertedProductID = await addProducts(newProduct);
 
-export const getOneProduct = async (req: Request, res: Response): Promise<void> => {
-  const productId = Number(req.params.productId); // Assuming productId is passed as a route parameter
+    // Log the inserted product ID
+    console.log('Inserted Product ID:', insertedProductID);
 
-  try {
-    const product = await getProductByID(productId);
-    if (!product) {
-      res.status(404).json({ message: 'Product not found' });
-      return;
-    }
+    if (imageFiles && imageFiles.images) {
+      for (const file of imageFiles.images) {
+        const imageURL = file.path; 
+          console.log("imageforloburl",imageURL);
+          await addImageForProduct(insertedProductID, imageURL);
+        }
+      }
+    
 
-    // Fetch images for the product
-    const images = await getProductImagesByProductID(productId);
-    const productWithImages: Product = {
-      ...product,
-      imageURLs: images.map((img) => img.imageURL).filter((url) => url !== undefined) as string[],
-    };
-
-    res.status(200).json(productWithImages);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
-  const productId = Number(req.params.productId); // Assuming productId is passed as a route parameter
-
-  try {
-    await deleteProductByID(productId);
-    res.status(200).json({ message: 'Product deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ error: 'Failed to delete product' });
+    res.status(200).json({ success: true, message: 'Product and images added successfully' });
+  } catch (error: any) {
+    console.error('Error creating product with images:', error);
+    res.status(500).json({ success: false, message: 'Failed to add product with images', error: error.message });
   }
 };

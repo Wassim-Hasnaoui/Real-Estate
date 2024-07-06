@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createUser, findUserByEmail, deleteUserByID, User} from '../models/modelUsers';
+import { createUser,findUserByEmail,getOneUserByID,User } from '../models/modelUsers';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
 const generateToken = (userID: number) => {
   return jwt.sign({ userID }, process.env.JWT_SECRET as string);
 };
@@ -13,6 +12,7 @@ const generateToken = (userID: number) => {
 const register = async (req: Request, res: Response) => {
   try {
     const { userName, email, password, image, phone } = req.body;
+console.log("reqbody is",req.body);
 
     const userExists = await findUserByEmail(email);
     if (userExists) {
@@ -63,19 +63,19 @@ const login = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-const deleteUser = async (req: Request, res: Response): Promise<void> => {
-  const userId = Number(req.params.userId); // Assuming userId is passed as a route parameter
-
-  try {
-    await deleteUserByID(userId);
-    res.status(200).json({ message: 'User deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    res.status(500).json({ error: 'Failed to delete user' });
+const GetOneUserByID = async (req: Request, res: Response)=>{
+    const userId = req.body.userId;
+try{
+    const user = await getOneUserByID(userId);
+    if (!user) {
+      return res.status(400).json({ message: 'user not found' });
+    }
+    res.status(201).json({success:true,message:"logged success",user});
+}
+catch (error) {
+    console.log( error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-};
+}
 
-
-
-export { register, login, deleteUser };
+export { register, login,GetOneUserByID };

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter from next/navigation
+import { useRouter } from 'next/navigation'; // Assuming correct import for Next.js
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import Navbar from '../navbar'; // Adjust path as per your project structure
@@ -11,16 +11,12 @@ interface Product {
   productName: string;
   price: number;
   status: string;
-  imageURL: string; // Assuming imageURL is available
+  imageURLs: string[]; // Assuming imageURLs is an array of strings
 }
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter(); // Initialize the router
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -31,8 +27,12 @@ const ProductList: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
   const handleProductClick = (productID: string) => {
-    console.log('Navigating to product details for productID:', productID); // Updated log message
+    console.log('Navigating to product details for productID:', productID);
     if (productID) {
       router.push(`/product/${productID}`);
     } else {
@@ -56,15 +56,22 @@ const ProductList: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
             <div
-              key={product.productID} // Updated key to productID
+              key={product.productID}
               className="mb-4 p-4 border rounded shadow-sm bg-white hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-              onClick={() => {
-                console.log('Clicked product:', product);
-                handleProductClick(product.productID); // Updated to productID
-              }}
+              onClick={() => handleProductClick(product.productID)}
             >
               <h2 className="text-xl font-semibold mb-2">{product.productName}</h2>
-              <img src={product.imageURL} alt={product.productName} className="mb-2 rounded-md" style={{ maxWidth: '100%', height: 'auto' }} />
+              {product.imageURLs.map((imageURL, index) => (
+                index === 0 && (
+                  <img
+                    key={index}
+                    src={`http://localhost:5000/products/${imageURL}`}
+                    alt={product.productName}
+                    className="mb-2 rounded-md"
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                  />
+                )
+              ))}
               <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
               <p className="mb-2"><strong>Status:</strong> {product.status}</p>
             </div>
@@ -73,6 +80,6 @@ const ProductList: React.FC = () => {
       </div>
     </div>
   );
-}
+};
 
 export default ProductList;

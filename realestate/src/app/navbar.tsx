@@ -11,7 +11,8 @@ const Navbar: React.FC = () => {
           <li><a href="/profile" className="hover:underline">Profile</a></li>
           <li><a href="/contact" className="hover:underline">Contact</a></li>
           <li><a href="/about" className="hover:underline">About</a></li>
-          <li><a href="/login" className="hover:underline">Log in</a></li>
+          <li><a href="/signIn" className="hover:underline">signIn</a></li>
+          <li><a href="/logIn" className="hover:underline">Log in</a></li>
         </ul>
       </nav>
     </header>

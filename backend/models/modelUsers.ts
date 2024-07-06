@@ -1,14 +1,18 @@
 import pool from '../dbConfig/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import { Product } from './modelProducts';
+import { Product } from '../types/product';
 
 interface User {
-  userID?: number;
+  userID: number;
+  UserID(UserID: any): unknown;
   userName: string;
   email: string;
   password: string;
-  image?: string;
-  phone: string;
+  phone?: string;
+  image?: {
+    secure_url: string;
+    public_id: string;
+  };
 }
 
 const createUser = async (user: User): Promise<ResultSetHeader> => {

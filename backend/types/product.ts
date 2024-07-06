@@ -1,13 +1,13 @@
+// types/product.ts
 export interface Product {
-    productID?: number;
-    productName?: string;
-    description?: string;
-    category?: string;
-    price?: number;
-    countryName?: string;
-    status?: string;
-    countryID?: number;
-    current_status?: string;
-    imageURL?: string;
-    users_userID?: number;
-}
+    productName: string;
+    description: string;
+    category: string;
+    price: number;
+    status: string;
+    current_status: string;
+    countryID: number;
+    userID: number;
+    imageURLs?: string[]; // Optional if used in some cases
+  }
+  

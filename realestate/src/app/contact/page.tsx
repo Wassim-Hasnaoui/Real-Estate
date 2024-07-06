@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import emailjs from 'emailjs-com';
 import './ContactUs.css';
+import emailjs from 'emailjs-com';
 
 const serviceId = 'service_x56kjyg';
 const templateId = 'template_usu6k3z'; // Updated template ID

@@ -28,7 +28,7 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get<Product[]>('http://localhost:5000/api/products/all'); // Adjust endpoint as per your API
+        const response = await axios.get<Product[]>('http://localhost:5000/api/products/all');
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -45,7 +45,6 @@ const ProductList: React.FC = () => {
     }
 
     try {
-      console.log("Fetching product with productId:", productId); // Debugging log
       const response = await axios.get<SelectedProduct>(`http://localhost:5000/api/products/one/${productId}`);
       setSelectedProduct(response.data);
     } catch (error) {

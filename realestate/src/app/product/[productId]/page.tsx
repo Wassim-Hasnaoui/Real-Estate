@@ -14,6 +14,7 @@ interface House {
   status: string;
   currentStatus: string;
   userId: string;
+  images: { productImageID: number; imageURL: string; productID: number }[];
 }
 
 const ProductDetails: React.FC = () => {
@@ -61,6 +62,14 @@ const ProductDetails: React.FC = () => {
           <p className="mb-2"><strong>Status:</strong> {product.status}</p>
           <p className="mb-2"><strong>Current Status:</strong> {product.currentStatus}</p>
           <p className="mb-2"><strong>User ID:</strong> {product.userId}</p>
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">Images:</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {product.images.map((image) => (
+                <img key={image.productImageID} src={image.imageURL} alt={`Image ${image.productImageID}`} className="w-full h-auto rounded" />
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>

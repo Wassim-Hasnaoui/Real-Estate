@@ -158,6 +158,18 @@ export const createProductWithImages = async (req: Request, res: Response): Prom
       }
     }
 
+  };  
+  export const markProductAsAvailable = async (req: Request, res: Response) => {
+    const productID = parseInt(req.params.productID);
+   try {
+        await updateCurrentStatusProductToAvailable(productID);
+        res.status(200).json({ message: 'Product status updated to available' });
+    } catch (error) {
+        console.error('Error updating product status:', error);
+        res.status(500).json({ message: 'Failed to update product status', error });
+    }
+};
+
     res.status(200).json({ success: true, message: 'Product and images added successfully' });
   } catch (error: any) {
     console.error('Error creating product with images:', error);

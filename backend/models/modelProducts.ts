@@ -34,8 +34,8 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
     FROM
       products p
     LEFT JOIN images_product i ON p.productID = i.productID
-    JOIN countrys c ON p.countryID = c.countryID 
-    WHERE p.productID=?
+    JOIN countrys c ON p.countryID = c.countryID
+    WHERE p.productID = ?
     GROUP BY p.productID;
   `, [productID]);
 
@@ -56,6 +56,7 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
     imageURLs: firstRow.imageURLs ? firstRow.imageURLs.split(',') : []
   };
 };
+
 
 const getProducts = async (): Promise<Product[]> => {
   const [rows] = await pool.query<RowDataPacket[]>(`

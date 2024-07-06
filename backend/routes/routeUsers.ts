@@ -1,7 +1,7 @@
 import express from 'express';
 import { register, login, GetOneUserByID } from '../controllers/usersController';
 import multer from 'multer';
-import authMiddleware from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 const upload = multer();
 const router = express.Router();
 

@@ -1,5 +1,7 @@
+// types/image.ts
 export interface Images {
     productImageID: number;
-    imageURL: string;
+    imageURL: string[];
     productID: number;
-}
+  }
+  

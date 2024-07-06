@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { useRouter } from 'next/navigation';;
 
 interface Product {
   productID: number;
@@ -27,6 +27,8 @@ const Profile = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>('all'); 
+  const router = useRouter();
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem('token');
@@ -74,8 +76,44 @@ const Profile = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
+  const handleDeleteProduct = async (productID: number) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this product?');
+    if (!confirmDelete) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5000/api/products/remove/${productID}`,{
+      });
+      setProducts(products.filter(product => product.productID !== productID));
+      alert('Product deleted successfully');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to delete product');
+    }
+  };
+  const handleUpdateProduct = (productID: number) => {
+    router.push(`/updateProduct/${productID}`);
+  };
+  const handleMarkAsAvailable = async (productID: number) => {
+    try {
+      await axios.post(`http://localhost:5000/api/products/available/${productID}`);
+      
+      setProducts(products.map(product =>
+        product.productID === productID
+          ? { ...product, current_status: 'available' }
+          : product
+      ));
+      alert('Product status updated to available');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update product status');
+    }
+  };
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+  };
   return (
+    
     <div>
       <h1>Profile</h1>
       {user && (
@@ -89,10 +127,18 @@ const Profile = () => {
       )}
 
       <h2>User Products</h2>
+      <div>
+        <button onClick={() => handleFilterChange('all')}>All</button>
+        <button onClick={() => handleFilterChange('available')}>Available</button>
+        <button onClick={() => handleFilterChange('rented')}>Rented</button>
+        <button onClick={() => handleFilterChange('sold')}>Sold</button>
+      </div>
       {products.length > 0 ? (
         <ul>
-          {products.map((product) => (
-            <li key={product.productID}>
+          {products.map((product) => {
+         if(filter==="all"||product.current_status===filter){
+         return(
+           <li key={product.productID}>
               <h3>{product.productName}</h3>
               <p>{product.description}</p>
               <p>Category: {product.category}</p>
@@ -100,11 +146,18 @@ const Profile = () => {
               <p>Country: {product.countryName}</p>
               <p>Status: {product.status}</p>
               <p>Current Status: {product.current_status}</p>
-              {product.imageURL && <img src={product.imageURL} alt={product.productName} style={{ width: '100px', height: '100px' }} />}
+              {product.imageURL && <img src={`http://localhost:5000/api/products/${product.imageURL}`} alt={product.productName} style={{ width: '100px', height: '100px' }} />}
+              <button onClick={() => handleDeleteProduct(product.productID)}>Delete</button>
+              <button onClick={() => handleUpdateProduct(product.productID)}>Update</button>
+              {product.current_status === 'sold' && (
+                <button onClick={() => handleMarkAsAvailable(product.productID)}>Mark as Available</button>
+              )}
             </li>
-          ))}
+           )
+        }
+})}
         </ul>
-      ) : (
+      ):(
         <p>No products found.</p>
       )}
     </div>

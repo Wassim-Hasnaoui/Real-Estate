@@ -1,11 +1,13 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation'; // Import usePathname from next/navigation
+import Navbar from '@/app/navbar'; // Adjust path to your Navbar component
 import axios from 'axios';
-import Navbar from '@/app/navbar'; // Adjust the path to your Navbar component
 import { motion } from 'framer-motion';
 
-interface House {
-  productId: string;
+// Define Product interface
+interface Product {
+  productID: number;
   productName: string;
   description: string;
   category: string;
@@ -14,29 +16,44 @@ interface House {
   status: string;
   currentStatus: string;
   userId: string;
-  images: { productImageID: number; imageURL: string; productID: number }[];
 }
 
+// ProductDetails component
 const ProductDetails: React.FC = () => {
-  const pathname = usePathname();
-  const productId = pathname?.split('/').pop(); // Extract productId from the pathname
-  const [product, setProduct] = useState<House | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (productId) {
-        try {
-          console.log("Fetching product with productId:", productId); // Debugging log
-          const response = await axios.get<House>(`http://localhost:5000/api/products/one/${productId}`);
+      try {
+        // Extract productID from the window location pathname
+        const productId = window.location.pathname.split('/').pop();
+        console.log('Extracted productId from URL:', productId);
+
+        if (productId) {
+          const response = await axios.get<Product>(`http://localhost:5000/api/products/${productId}`);
+          console.log('Fetched product:', response.data);
           setProduct(response.data);
-        } catch (error) {
-          console.error(`Error fetching product ${productId}:`, error);
         }
+      } catch (error) {
+        console.error('Error fetching product:', error);
       }
     };
 
     fetchProduct();
-  }, [productId]);
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  const nextImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % product.images!.length);
+    }
+  };
+
+  const previousImage = () => {
+    if (product && product.images && product.images.length > 0) {
+      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + product.images!.length) % product.images!.length);
+    }
+  };
 
   if (!product) {
     return <p>Loading...</p>;
@@ -45,8 +62,63 @@ const ProductDetails: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-3xl"> {/* Adjusted max-width to max-w-3xl */}
         <h1 className="text-3xl font-bold mb-8 text-center">Product Details</h1>
+
+        {/* Display Product Images */}
+        <div className="mb-4 p-4 border rounded shadow-sm bg-white hover:bg-gray-100 transition-colors duration-200">
+          <h2 className="text-xl font-semibold mb-2">Product Images</h2>
+          <div className="relative w-full max-w-md mx-auto">
+            {product.images && product.images.length > 0 && (
+              <motion.img
+                src={product.images[currentImageIndex]}
+                alt={product.productName}
+                className="w-full h-auto rounded-lg shadow-lg object-cover"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+            )}
+            {/* Previous Button */}
+            {product.images && product.images.length > 1 && (
+              <motion.button
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md"
+                onClick={previousImage}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                Previous
+              </motion.button>
+            )}
+            {/* Next Button */}
+            {product.images && product.images.length > 1 && (
+              <motion.button
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md"
+                onClick={nextImage}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                Next
+              </motion.button>
+            )}
+          </div>
+
+          <div className="mt-4 flex justify-center space-x-4">
+            {product.images && product.images.map((imagePath, index) => (
+              <img
+                key={index}
+                src={imagePath}
+                alt={product.productName}
+                className={`w-16 h-16 rounded-lg cursor-pointer ${
+                  index === currentImageIndex ? 'border-2 border-blue-500' : ''
+                }`}
+                onClick={() => setCurrentImageIndex(index)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Display Product Details */}
         <motion.div
           className="mb-4 p-4 border rounded shadow-sm bg-white hover:bg-gray-100 transition-colors duration-200"
           initial={{ opacity: 0, y: 20 }}
@@ -62,14 +134,6 @@ const ProductDetails: React.FC = () => {
           <p className="mb-2"><strong>Status:</strong> {product.status}</p>
           <p className="mb-2"><strong>Current Status:</strong> {product.currentStatus}</p>
           <p className="mb-2"><strong>User ID:</strong> {product.userId}</p>
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Images:</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {product.images.map((image) => (
-                <img key={image.productImageID} src={image.imageURL} alt={`Image ${image.productImageID}`} className="w-full h-auto rounded" />
-              ))}
-            </div>
-          </div>
         </motion.div>
       </div>
     </div>

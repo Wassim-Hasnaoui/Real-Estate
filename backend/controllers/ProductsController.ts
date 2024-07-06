@@ -7,7 +7,8 @@ import {  getProductByID, getProducts, Product,getImagesByProductID
     updateProduct,
     findImageByURLAndProductID,
     addImageForProduct,
-    deleteImageByID
+    deleteImageByID,
+    updateCurrentStatusProductToAvailable
  } from '../models/modelProducts';
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -78,7 +79,8 @@ export const GetProductsOfUser=async(req:Request,res:Response):Promise<void>=>{
 export const UpdateProductCurrentStatusToSold = async (req: Request, res: Response): Promise<void> => {
     try {
         const productID = parseInt(req.params.id);
-        await updateCurrentStatusProductToSold(productID);
+        
+        await updateCurrentStatusProductToSold(productID,req.body.userId);
         res.status(200).json({ success: true, message: 'Product status updated to sold' });
     } catch (error) {
         console.log(error);
@@ -172,3 +174,15 @@ export const updateProductController = async (req: Request, res: Response) => {
       res.status(500).json({ message: 'Error adding image', error });
     }
   };  
+  export const markProductAsAvailable = async (req: Request, res: Response) => {
+    const productID = parseInt(req.params.productID);
+   
+
+    try {
+        await updateCurrentStatusProductToAvailable(productID);
+        res.status(200).json({ message: 'Product status updated to available' });
+    } catch (error) {
+        console.error('Error updating product status:', error);
+        res.status(500).json({ message: 'Failed to update product status', error });
+    }
+};

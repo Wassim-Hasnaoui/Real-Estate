@@ -107,8 +107,11 @@ const getProductsOfUser = async (userID:Number): Promise<Product[]|null> => {
         users_userID:row.users_userID
     })) as Product[];
 };
-const updateCurrentStatusProductToSold = async (productID: number): Promise<void> => {
-    await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['sold', productID]);
+const updateCurrentStatusProductToSold = async (productID: number, users_userID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>(
+        'UPDATE products SET current_status = ?, users_userID = ? WHERE productID = ?',
+        ['sold', users_userID,productID]
+    );
 };
 
 const updateCurrentStatusProductToRented = async (productID: number): Promise<void> => {
@@ -135,7 +138,14 @@ const updateProduct = async (productID: number, product: Product): Promise<void>
   const deleteImageByID = async (imageID: number): Promise<void> => {
     await pool.query<ResultSetHeader>('DELETE FROM images_product WHERE productImageID = ?', [imageID]);
 };
+const updateCurrentStatusProductToAvailable = async (productID: number): Promise<void> => {
+    await pool.query<ResultSetHeader>(
+        'UPDATE products SET current_status = ? WHERE productID = ?',
+        ['available', productID]
+    );
+};
 export { getProducts,getImagesByProductID, getProductByID, 
     Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser,
     updateCurrentStatusProductToRented,updateCurrentStatusProductToSold,
-    updateProduct,addImageForProduct,findImageByURLAndProductID,deleteImageByID };
+    updateProduct,addImageForProduct,findImageByURLAndProductID,deleteImageByID,
+    updateCurrentStatusProductToAvailable };

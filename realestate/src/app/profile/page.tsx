@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { useRouter } from 'next/navigation';;
 
 interface Product {
   productID: number;
@@ -27,6 +27,7 @@ const Profile = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem('token');
@@ -74,7 +75,24 @@ const Profile = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
+  const handleDeleteProduct = async (productID: number) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this product?');
+    if (!confirmDelete) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5000/api/products/remove/${productID}`,{
+      });
+      setProducts(products.filter(product => product.productID !== productID));
+      alert('Product deleted successfully');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to delete product');
+    }
+  };
+  const handleUpdateProduct = (productID: number) => {
+    router.push(`/updateProduct/${productID}`);
+  };
   return (
     <div>
       <h1>Profile</h1>
@@ -100,7 +118,9 @@ const Profile = () => {
               <p>Country: {product.countryName}</p>
               <p>Status: {product.status}</p>
               <p>Current Status: {product.current_status}</p>
-              {product.imageURL && <img src={product.imageURL} alt={product.productName} style={{ width: '100px', height: '100px' }} />}
+              {product.imageURL && <img src={`http://localhost:5000/api/products/${product.imageURL}`} alt={product.productName} style={{ width: '100px', height: '100px' }} />}
+              <button onClick={() => handleDeleteProduct(product.productID)}>Delete</button>
+              <button onClick={() => handleUpdateProduct(product.productID)}>Update</button>
             </li>
           ))}
         </ul>

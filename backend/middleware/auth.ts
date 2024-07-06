@@ -1,9 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import {
+  NextFunction,
+  Request,
+  Response,
+} from 'express';
+import jwt from 'jsonwebtoken';
 
 interface AuthenticatedRequest extends Request {
   userId?: number; 
 }
+
 
 const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   
@@ -39,4 +44,4 @@ console.log("token is ",token);
   }
 };
 
-export default authMiddleware;
+export { authMiddleware };

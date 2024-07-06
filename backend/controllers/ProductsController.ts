@@ -176,9 +176,7 @@ export const updateProductController = async (req: Request, res: Response) => {
   };  
   export const markProductAsAvailable = async (req: Request, res: Response) => {
     const productID = parseInt(req.params.productID);
-   
-
-    try {
+   try {
         await updateCurrentStatusProductToAvailable(productID);
         res.status(200).json({ message: 'Product status updated to available' });
     } catch (error) {

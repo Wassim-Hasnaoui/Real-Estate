@@ -14,9 +14,8 @@ interface Product {
   price: number;
   countryId: string;
   status: string;
-  current_status: string; // Changed to current_status
-  userID: string;
-  images?: string[]; // Updated to images for the array of image paths or identifiers
+  currentStatus: string;
+  userId: string;
 }
 
 // ProductDetails component
@@ -128,14 +127,13 @@ const ProductDetails: React.FC = () => {
           whileHover={{ scale: 1.05 }}
         >
           <h2 className="text-xl font-semibold mb-2">{product.productName}</h2>
-          <p className="mb-4">{product.description}</p>
-          
-          <p className="mt-4"><strong>Category:</strong> {product.category}</p>
-          <p><strong>Price:</strong> ${product.price}</p>
-          <p><strong>Country ID:</strong> {product.countryId}</p>
-          <p><strong>Status:</strong> {product.status}</p>
-          <p><strong>Current Status:</strong> {product.current_status}</p>
-          <p><strong>User ID:</strong> {product.userID}</p>
+          <p className="mb-2">{product.description}</p>
+          <p className="mb-2"><strong>Category:</strong> {product.category}</p>
+          <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
+          <p className="mb-2"><strong>Country ID:</strong> {product.countryId}</p>
+          <p className="mb-2"><strong>Status:</strong> {product.status}</p>
+          <p className="mb-2"><strong>Current Status:</strong> {product.currentStatus}</p>
+          <p className="mb-2"><strong>User ID:</strong> {product.userId}</p>
         </motion.div>
       </div>
     </div>

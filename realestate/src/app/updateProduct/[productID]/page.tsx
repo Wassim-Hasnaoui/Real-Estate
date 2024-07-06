@@ -1,16 +1,22 @@
 "use client";
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Product } from '../product';
-import { Images } from '../Images';
-const ProductUpdatePage = ({ productID }: { productID: number }) => {
+import { Product } from '../../product';
+import { Images } from '../../Images';
+import { useRouter,useParams } from 'next/navigation';;
+const ProductUpdatePage = () => {
+    const router = useRouter();
+    const { productID } = useParams<{ productID: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [images, setImages] = useState<Images[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const fetchProduct = async () => {
+
+    console.log("idpro, ",productID);
+    
     try{
-      const response = await axios.get(`http://localhost:5000/api/products/one/${2}`);
+      const response = await axios.get(`http://localhost:5000/api/products/one/${productID}`);
       setProduct(response.data);
       setImages(response.data.images);
     } catch (error) {
@@ -31,7 +37,7 @@ const ProductUpdatePage = ({ productID }: { productID: number }) => {
 console.log("newimages",newImages);
 
     try {
-await axios.post(`http://localhost:5000/api/products/add/images/${2}`,data);
+await axios.post(`http://localhost:5000/api/products/add/images/${productID}`,data);
       fetchProduct();
       alert('Images uploaded successfully');
       setNewImages([]);
@@ -75,7 +81,7 @@ await axios.post(`http://localhost:5000/api/products/add/images/${2}`,data);
     console.log("data is ",data);
     
     try {
-      await axios.put(`http://localhost:5000/api/products/update/${2}`, data,);
+      await axios.put(`http://localhost:5000/api/products/update/${productID}`, data,);
       alert('Product updated successfully');
     } catch (error) {
       console.error('Error updating product:', error);

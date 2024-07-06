@@ -20,7 +20,7 @@ export const fetchProducts = async (req: Request, res: Response): Promise<void> 
 };
 export const fetshOneProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const productID = parseInt(req.params.id); // Parse `productID` as an integer with radix 10
+        const productID = parseInt(req.params.id); 
 
         if (isNaN(productID)) {
             res.status(400).json({ message: 'Invalid product ID' });
@@ -171,4 +171,4 @@ export const updateProductController = async (req: Request, res: Response) => {
     } catch (error) {
       res.status(500).json({ message: 'Error adding image', error });
     }
-  };
+  };  

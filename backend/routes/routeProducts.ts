@@ -14,11 +14,10 @@ const storage = multer.diskStorage({
     }
   });
 
-  const upload = multer({ 
+const upload = multer({ 
     storage: storage,
     limits: { fileSize: 50 * 1024 * 1024 } // Set the file size limit to 50MB
   });
-
 
 // Route for fetching all products
 router.get('/all', fetchProducts);

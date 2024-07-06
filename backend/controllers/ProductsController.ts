@@ -1,8 +1,4 @@
-import {
-  Request,
-  Response,
-} from 'express';
-
+import { Request, Response } from 'express';
 import {
   addImageForProduct,
   addProducts,
@@ -17,7 +13,6 @@ import {
   updateProduct,
 } from '../models/modelProducts';
 import { Product } from '../types/product';
-import multer from 'multer';
 
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -31,7 +26,7 @@ export const fetchProducts = async (req: Request, res: Response): Promise<void> 
 
 export const fetchOneProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const productID = parseInt(req.params.id); // Parse `productID` as an integer with radix 10
+        const productID = parseInt(req.params.id); 
 
         if (isNaN(productID)) {
             res.status(400).json({ message: 'Invalid product ID' });
@@ -91,14 +86,9 @@ export const getProductsOfUserController = async (req: Request, res: Response): 
 export const updateCurrentStatusProductToSoldController = async (req: Request, res: Response): Promise<void> => {
     try {
         const productID = parseInt(req.params.id);
-        const product = await getProductByID(productID);
-        if (!product) {
-            res.status(404).json({ message: 'Product not found' });
-            return;
-        }
-
-        await updateCurrentStatusProductToSold(productID);
-        res.status(200).json({ success: true, message: 'Product status updated to sold successfully' });
+        
+        await updateCurrentStatusProductToSold(productID, req.body.userId);
+        res.status(200).json({ success: true, message: 'Product status updated to sold' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error, success: false });
@@ -145,10 +135,7 @@ export const createProductWithImages = async (req: Request, res: Response): Prom
   try {
     const { productName, description, category, price, status, current_status, countryID, userID } = req.body;
     const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
-  console.log("imagesfile",imageFiles);
 
-    // Log the image files array before mapping
-    console.log('Image files before mapping:', imageFiles);
     // Create a new product object
     const newProduct = {
       productName,
@@ -164,17 +151,12 @@ export const createProductWithImages = async (req: Request, res: Response): Prom
     // Add the product and get the inserted productID
     const insertedProductID = await addProducts(newProduct);
 
-    // Log the inserted product ID
-    console.log('Inserted Product ID:', insertedProductID);
-
     if (imageFiles && imageFiles.images) {
       for (const file of imageFiles.images) {
-        const imageURL = file.path; 
-          console.log("imageforloburl",imageURL);
-          await addImageForProduct(insertedProductID, imageURL);
-        }
+        const imageURL = file.path;
+        await addImageForProduct(insertedProductID, imageURL);
       }
-    
+    }
 
     res.status(200).json({ success: true, message: 'Product and images added successfully' });
   } catch (error: any) {

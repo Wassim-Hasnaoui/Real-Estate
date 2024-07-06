@@ -1,10 +1,4 @@
-// models/modelProducts.ts
-
-import {
-  ResultSetHeader,
-  RowDataPacket,
-} from 'mysql2';
-
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import pool from '../dbConfig/db';
 import { Images } from '../types/image';
 import { Product } from '../types/product';
@@ -19,7 +13,8 @@ const getImagesByProductID = async (productID: number): Promise<Images[]> => {
 };
 
 const getProductByID = async (productID: number): Promise<Product | null> => {
-  const [rows] = await pool.query<RowDataPacket[]>(`
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
     SELECT
       p.productID,
       p.productName,
@@ -27,9 +22,10 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
       p.category,
       p.price,
       c.countryID,
+      c.countryName,
       p.status,
       p.current_status,
-      p.userID,
+      p.users_userID as userID,
       GROUP_CONCAT(i.imageURL) AS imageURLs
     FROM
       products p
@@ -37,7 +33,9 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
     JOIN countrys c ON p.countryID = c.countryID
     WHERE p.productID = ?
     GROUP BY p.productID;
-  `, [productID]);
+    `,
+    [productID]
+  );
 
   if (rows.length === 0) {
     return null;
@@ -45,6 +43,7 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
 
   const firstRow = rows[0];
   return {
+    productID: firstRow.productID,
     productName: firstRow.productName,
     description: firstRow.description,
     category: firstRow.category,
@@ -52,14 +51,15 @@ const getProductByID = async (productID: number): Promise<Product | null> => {
     status: firstRow.status,
     current_status: firstRow.current_status,
     countryID: firstRow.countryID,
+    countryName: firstRow.countryName,
     userID: firstRow.userID,
     imageURLs: firstRow.imageURLs ? firstRow.imageURLs.split(',') : []
   };
 };
 
-
 const getProducts = async (): Promise<Product[]> => {
-  const [rows] = await pool.query<RowDataPacket[]>(`
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
     SELECT
       p.productID,
       p.productName,
@@ -67,16 +67,18 @@ const getProducts = async (): Promise<Product[]> => {
       p.category,
       p.price,
       c.countryID,
+      c.countryName,
       p.status,
       p.current_status,
-      p.userID,
+      p.users_userID as userID,
       GROUP_CONCAT(i.imageURL) AS imageURLs
     FROM
       products p
     LEFT JOIN images_product i ON p.productID = i.productID
-    JOIN countrys c ON p.countryID = c.countryID 
+    JOIN countrys c ON p.countryID = c.countryID
     GROUP BY p.productID;
-  `);
+    `
+  );
 
   return rows.map(row => ({
     productID: row.productID,
@@ -87,6 +89,7 @@ const getProducts = async (): Promise<Product[]> => {
     status: row.status,
     current_status: row.current_status,
     countryID: row.countryID,
+    countryName: row.countryName,
     userID: row.userID,
     imageURLs: row.imageURLs ? row.imageURLs.split(',') : []
   })) as Product[];
@@ -101,7 +104,8 @@ const deleteImagesOfProduct = async (productID: number): Promise<void> => {
 };
 
 const getProductsOfUser = async (userID: number): Promise<Product[]> => {
-  const [rows] = await pool.query<RowDataPacket[]>(`
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `
     SELECT
       p.productID,
       p.productName,
@@ -109,16 +113,20 @@ const getProductsOfUser = async (userID: number): Promise<Product[]> => {
       p.category,
       p.price,
       c.countryID,
+      c.countryName,
       p.status,
       p.current_status,
+      p.users_userID as userID,
       GROUP_CONCAT(i.imageURL) AS imageURLs
     FROM
       products p
     LEFT JOIN images_product i ON p.productID = i.productID
-    JOIN countrys c ON p.countryID = c.countryID 
-    WHERE p.userID=?
+    JOIN countrys c ON p.countryID = c.countryID
+    WHERE p.users_userID = ?
     GROUP BY p.productID;
-  `, [userID]);
+    `,
+    [userID]
+  );
 
   return rows.map(row => ({
     productID: row.productID,
@@ -129,13 +137,17 @@ const getProductsOfUser = async (userID: number): Promise<Product[]> => {
     status: row.status,
     current_status: row.current_status,
     countryID: row.countryID,
+    countryName: row.countryName,
     userID: row.userID,
     imageURLs: row.imageURLs ? row.imageURLs.split(',') : []
   })) as Product[];
 };
 
-const updateCurrentStatusProductToSold = async (productID: number): Promise<void> => {
-  await pool.query<ResultSetHeader>('UPDATE products SET current_status = ? WHERE productID = ?', ['sold', productID]);
+const updateCurrentStatusProductToSold = async (productID: number, userID: number): Promise<void> => {
+  await pool.query<ResultSetHeader>(
+    'UPDATE products SET current_status = ?, users_userID = ? WHERE productID = ?',
+    ['sold', userID, productID]
+  );
 };
 
 const updateCurrentStatusProductToRented = async (productID: number): Promise<void> => {
@@ -145,18 +157,13 @@ const updateCurrentStatusProductToRented = async (productID: number): Promise<vo
 const updateProduct = async (productID: number, product: Partial<Product>): Promise<void> => {
   const { productName, description, category, price, status, current_status, countryID, userID } = product;
   await pool.query<ResultSetHeader>(
-    `UPDATE products 
-     SET productName = ?, description = ?, category = ?, price = ?, status = ?, current_status = ?, countryID = ?, userID = ? 
-     WHERE productID = ?`,
+    `
+    UPDATE products
+    SET productName = ?, description = ?, category = ?, price = ?, status = ?, current_status = ?, countryID = ?, users_userID = ?
+    WHERE productID = ?
+    `,
     [productName, description, category, price, status, current_status, countryID, userID, productID]
   );
-};
-
-
-
-const findImageByURLAndProductID = async (productID: number, imageURL: string): Promise<Images | null> => {
-  const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM images_product WHERE imageURL = ? AND productID=?', [imageURL, productID]);
-  return rows.length > 0 ? (rows[0] as Images) : null;
 };
 
 const addImageForProduct = async (productID: number, imageURL: string): Promise<void> => {
@@ -165,39 +172,44 @@ const addImageForProduct = async (productID: number, imageURL: string): Promise<
 
 const addProducts = async (product: Product): Promise<number> => {
   try {
-    // Begin transaction
     await pool.query('START TRANSACTION');
 
-    // Insert product into products table
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO products (productName, description, category, price, countryID, status, current_status, userID) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [product.productName, product.description, product.category, product.price, product.countryID, product.status, product.current_status, product.userID]
+      `
+      INSERT INTO products (productName, description, category, price, countryID, status, current_status, users_userID)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        product.productName,
+        product.description,
+        product.category,
+        product.price,
+        product.countryID,
+        product.status,
+        product.current_status,
+        product.userID
+      ]
     );
-    const productID = result.insertId;
 
-    // Commit transaction
     await pool.query('COMMIT');
 
-    return productID;
+    return result.insertId;
   } catch (error) {
-    // Rollback transaction on error
     await pool.query('ROLLBACK');
     throw error;
   }
 };
 
 export {
-  addImageForProduct,
-  addProducts,
-  deleteImagesOfProduct,
-  deleteProduct,
-  findImageByURLAndProductID,
   getImagesByProductID,
   getProductByID,
   getProducts,
+  deleteProduct,
+  deleteImagesOfProduct,
   getProductsOfUser,
-  updateCurrentStatusProductToRented,
   updateCurrentStatusProductToSold,
+  updateCurrentStatusProductToRented,
   updateProduct,
+  addImageForProduct,
+  addProducts
 };

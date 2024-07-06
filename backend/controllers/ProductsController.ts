@@ -31,7 +31,7 @@ export const fetchProducts = async (req: Request, res: Response): Promise<void> 
 
 export const fetchOneProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const productID = parseInt(req.params.id); // Parse `productID` as an integer with radix 10
+        const productID = parseInt(req.params.id); 
 
         if (isNaN(productID)) {
             res.status(400).json({ message: 'Invalid product ID' });

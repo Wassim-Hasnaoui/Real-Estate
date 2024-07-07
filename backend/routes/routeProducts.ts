@@ -31,5 +31,5 @@ router.put("/update/:productID",updateProductController)
 router.delete("/delete/image/:imageID",DeleteImage)
 router.post("/add/images/:productID",upload.fields([{ name: 'images', maxCount: 10 }]),addImagesForProduct)
 router.post("/available/:productID",markProductAsAvailable)
-router.post('/add', upload.fields([{ name: 'images', maxCount: 10 }]), createProductWithImages);
+router.post('/add',upload.fields([{ name: 'images', maxCount: 10 }]),authMiddleware,createProductWithImages);
 export default router

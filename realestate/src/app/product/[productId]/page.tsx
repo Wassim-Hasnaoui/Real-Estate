@@ -16,8 +16,9 @@ interface Product {
   status: string;
   currentStatus: string;
   userId: string;
-  images: object[];
+  images: object[]
 }
+
 
 // ProductDetails component
 const ProductDetails: React.FC = () => {

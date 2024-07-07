@@ -4,7 +4,7 @@ import { addImagesForProduct, createProductWithImages, DeleteImage, DeleteProduc
     markProductAsAvailable, updateProductController, 
     UpdateProductCurrentStatusToRented, UpdateProductCurrentStatusToSold } 
     from '../controllers/ProductsController';
-import authMiddleware from '../middleware/auth';
+import {authMiddleware} from '../middleware/auth';
 import multer from 'multer';
 import path from 'path';
 const storage = multer.diskStorage({

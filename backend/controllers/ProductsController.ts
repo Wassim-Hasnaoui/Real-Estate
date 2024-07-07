@@ -1,30 +1,26 @@
 import { Request, Response } from 'express';
-import {
-  addImageForProduct,
-  addProducts,
-  deleteImagesOfProduct,
-  deleteProduct,
-  getImagesByProductID,
-  getProductByID,
-  getProducts,
-  getProductsOfUser,
-  updateCurrentStatusProductToRented,
-  updateCurrentStatusProductToSold,
-  updateProduct,
-} from '../models/modelProducts';
-import { Product } from '../types/product';
-
+import {  getProductByID, getProducts, Product,getImagesByProductID
+    ,deleteProduct,deleteImagesOfProduct,
+    getProductsOfUser,
+    updateCurrentStatusProductToSold,
+    updateCurrentStatusProductToRented,
+    updateProduct,
+    findImageByURLAndProductID,
+    addImageForProduct,
+    deleteImageByID,
+    updateCurrentStatusProductToAvailable,
+    addProducts
+ } from '../models/modelProducts';
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
         const products = await getProducts();
-        res.status(200).json(products);
+       res.status(200).json(products);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error });
     }
 };
-
-export const fetchOneProduct = async (req: Request, res: Response): Promise<void> => {
+export const fetshOneProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const productID = parseInt(req.params.id); 
 
@@ -47,121 +43,143 @@ export const fetchOneProduct = async (req: Request, res: Response): Promise<void
         res.status(500).json({ error: "Internal server error" });
     }
 };
-
-export const deleteProductController = async (req: Request, res: Response): Promise<void> => {
+export const DeleteProduct=async(req:Request,res:Response):Promise<void>=>{
     try {
         const productID = parseInt(req.params.id);
         const product = await getProductByID(productID);
-        if (!product) {
+        if (!product){
             res.status(404).json({ message: 'Product not found' });
             return;
         }
 
-        console.log("reach product", product);
+        console.log("reach product",product);
         await deleteImagesOfProduct(productID);
-        await deleteProduct(productID);
 
-        res.status(200).json({ success: true, message: 'Product and its images deleted successfully' });
+        await deleteProduct(productID);
+       
+        res.status(200).json({ success:true,message: 'Product and its images deleted successfully' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: error, success: false });
+        res.status(500).json({ error: error,success:false });
     }
-};
-
-export const getProductsOfUserController = async (req: Request, res: Response): Promise<void> => {
+}
+export const GetProductsOfUser=async(req:Request,res:Response):Promise<void>=>{
+ const userID=req.body.userId
     try {
-        const userID = parseInt(req.params.id); // Parse `userID` as an integer with radix 10
-        if (isNaN(userID)) {
-            res.status(400).json({ message: 'Invalid user ID' });
-            return;
-        }
-        const products = await getProductsOfUser(userID);
-        res.status(200).json(products);
+        console.log("userid is",userID);
+        
+        const ProductsOfUser = await getProductsOfUser(userID);
+       res.status(200).json({success:true,ProductsOfUser});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    
+    }
+}
+
+export const UpdateProductCurrentStatusToSold = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const productID = parseInt(req.params.id);
+        
+        await updateCurrentStatusProductToSold(productID,req.body.userId);
+        res.status(200).json({ success: true, message: 'Product status updated to sold' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error });
     }
 };
 
-export const updateCurrentStatusProductToSoldController = async (req: Request, res: Response): Promise<void> => {
+export const UpdateProductCurrentStatusToRented = async (req: Request, res: Response): Promise<void> => {
     try {
         const productID = parseInt(req.params.id);
-        
-        await updateCurrentStatusProductToSold(productID, req.body.userId);
-        res.status(200).json({ success: true, message: 'Product status updated to sold' });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: error, success: false });
-    }
-};
-
-export const updateCurrentStatusProductToRentedController = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const productID = parseInt(req.params.id);
-        const product = await getProductByID(productID);
-        if (!product) {
-            res.status(404).json({ message: 'Product not found' });
-            return;
-        }
-
         await updateCurrentStatusProductToRented(productID);
-        res.status(200).json({ success: true, message: 'Product status updated to rented successfully' });
+        res.status(200).json({ success: true, message: 'Product status updated to rented' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: error, success: false });
+        res.status(500).json({ error: error });
     }
 };
-
-export const updateProductController = async (req: Request, res: Response): Promise<void> => {
+export const updateProductController = async (req: Request, res: Response) => {
+    const productID = parseInt(req.params.productID);
+    const productData = req.body;
+    
+  
+  
     try {
-        const productID = parseInt(req.params.id);
-        const product = await getProductByID(productID);
-        if (!product) {
-            res.status(404).json({ message: 'Product not found' });
-            return;
-        }
-
-        const updatedProduct: Partial<Product> = req.body;
-        await updateProduct(productID, updatedProduct);
-
-        res.status(200).json({ success: true, message: 'Product updated successfully' });
+      const existingProduct = await getProductByID(productID);
+      if (!existingProduct) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+     console.log("existproduct",existingProduct);
+     console.log("productdata",productData);
+     
+      const updatedProduct :Partial<Product> = {
+        productName: productData.productName || existingProduct.productName,
+        description: productData.description || existingProduct.description,
+        category: productData.category || existingProduct.category,
+        price: productData.price || existingProduct.price,
+        status: productData.status || existingProduct.status,
+        current_status: productData.current_status || existingProduct.current_status,
+        countryID: productData.countryID || existingProduct.countryID,
+        users_userID: productData.users_userID || existingProduct.users_userID,
+      };
+      console.log("updatedproduct",updatedProduct);
+      
+      await updateProduct(productID,updatedProduct);
+  
+      res.status(200).json({message:'Product updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating product', error });
+    }
+  };
+  export const DeleteImage=async(req:Request,res:Response):Promise<void>=>{
+    try {
+        const imageID = parseInt(req.params.imageID);
+      await deleteImageByID(imageID);    
+        res.status(200).json({ success:true,message: 'image  deleted successfully' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: error, success: false });
+        res.status(500).json({ error: error,success:false });
     }
-};
+  }
 
-export const createProductWithImages = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { productName, description, category, price, status, current_status, countryID, userID } = req.body;
+  export const addImagesForProduct = async (req: Request, res: Response) => {
+    const productID = parseInt(req.params.productID);
+    
     const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
-
-    // Create a new product object
-    const newProduct = {
-      productName,
-      description,
-      category,
-      price,
-      status,
-      current_status,
-      countryID,
-      userID,
-    };
-
-    // Add the product and get the inserted productID
-    const insertedProductID = await addProducts(newProduct);
-
-    if (imageFiles && imageFiles.images) {
-      for (const file of imageFiles.images) {
-        const imageURL = file.path;
-        await addImageForProduct(insertedProductID, imageURL);
+  console.log("imagesfile",imageFiles);
+  
+    try {
+      const existingProduct = await getProductByID(productID);
+      if (!existingProduct) {
+        return res.status(404).json({ message: 'Product not found' });
       }
-    }
+  
+     console.log("existproduct",existingProduct);
 
+      if (imageFiles && imageFiles.images) {
+        for (const file of imageFiles.images) {
+          const imageURL = file.path; 
+  console.log("imageforloburl",imageURL);
+          const existingImage = await findImageByURLAndProductID(productID, imageURL);
+         console.log("exist image",existingImage);
+   if (!existingImage) {
+            await addImageForProduct(productID, imageURL);
+          }
+        }
+      }
+  
+      res.status(200).json({message:'images added successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error adding image', error });
+    }
   };  
   export const markProductAsAvailable = async (req: Request, res: Response) => {
     const productID = parseInt(req.params.productID);
-   try {
+   
+
+    try {
         await updateCurrentStatusProductToAvailable(productID);
         res.status(200).json({ message: 'Product status updated to available' });
     } catch (error) {
@@ -169,10 +187,39 @@ export const createProductWithImages = async (req: Request, res: Response): Prom
         res.status(500).json({ message: 'Failed to update product status', error });
     }
 };
-
-    res.status(200).json({ success: true, message: 'Product and images added successfully' });
-  } catch (error: any) {
-    console.error('Error creating product with images:', error);
-    res.status(500).json({ success: false, message: 'Failed to add product with images', error: error.message });
-  }
-};
+export const createProductWithImages = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { productName, description, category, price, status, current_status, countryID, users_userID } = req.body;
+      const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
+  
+      const newProduct = {
+        productName,
+        description,
+        category,
+        price,
+        status,
+        current_status,
+        countryID,
+        users_userID,
+      };
+  
+     
+      const insertedProductID = await addProducts(newProduct);
+  
+      if (imageFiles && imageFiles.images) {
+        for (const file of imageFiles.images) {
+          const imageURL = file.path;
+          await addImageForProduct(insertedProductID, imageURL);
+        }
+      }
+  
+    
+   
+  
+      res.status(200).json({ success: true, message: 'Product and images added successfully' });
+    }
+      catch (error) {
+      console.log('Error creating product with images:', error);
+      res.status(500).json({ success: false, message: 'Failed to add product with images', error: error });
+    }
+}

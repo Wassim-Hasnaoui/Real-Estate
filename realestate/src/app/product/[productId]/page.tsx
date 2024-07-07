@@ -5,7 +5,7 @@ import Navbar from '@/app/navbar'; // Adjust path to your Navbar component
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
-// Define Product interface
+//Define Product interface
 interface Product {
   productID: number;
   productName: string;
@@ -16,6 +16,7 @@ interface Product {
   status: string;
   currentStatus: string;
   userId: string;
+  images: object[];
 }
 
 // ProductDetails component
@@ -31,9 +32,11 @@ const ProductDetails: React.FC = () => {
         console.log('Extracted productId from URL:', productId);
 
         if (productId) {
-          const response = await axios.get<Product>(`http://localhost:5000/api/products/${productId}`);
+          const response = await axios.get(`http://localhost:5000/api/products/one/${productId}`);
           console.log('Fetched product:', response.data);
           setProduct(response.data);
+          console.log("images",response.data.images);
+          
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -41,7 +44,7 @@ const ProductDetails: React.FC = () => {
     };
 
     fetchProduct();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   const nextImage = () => {
     if (product && product.images && product.images.length > 0) {
@@ -71,7 +74,7 @@ const ProductDetails: React.FC = () => {
           <div className="relative w-full max-w-md mx-auto">
             {product.images && product.images.length > 0 && (
               <motion.img
-                src={product.images[currentImageIndex]}
+                src={ `http://localhost:5000/api/products/${product.images[currentImageIndex].imageURL}`}
                 alt={product.productName}
                 className="w-full h-auto rounded-lg shadow-lg object-cover"
                 initial={{ opacity: 0 }}
@@ -107,7 +110,7 @@ const ProductDetails: React.FC = () => {
             {product.images && product.images.map((imagePath, index) => (
               <img
                 key={index}
-                src={imagePath}
+                src={ `http://localhost:5000/api/products/${imagePath.imageURL}`}
                 alt={product.productName}
                 className={`w-16 h-16 rounded-lg cursor-pointer ${
                   index === currentImageIndex ? 'border-2 border-blue-500' : ''

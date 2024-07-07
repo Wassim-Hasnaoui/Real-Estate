@@ -47,7 +47,7 @@ const Profile = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUser(userResponse.data);
+        setUser(userResponse.data.user);
         console.log("userres", userResponse.data);
 
         const productsResponse = await axios.get('http://localhost:5000/api/products/userProduct', {

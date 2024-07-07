@@ -11,7 +11,8 @@ interface Product {
   price: number;
   status: string;
   description:string;
-  imageURL: string; // imageURLs is an array of strings
+  imageURL: string; 
+  current_status:string
 }
 
 const ProductList: React.FC = () => {
@@ -57,6 +58,7 @@ const ProductList: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => {
+            if(product.current_status!=="sold"){
             console.log('Product:', product);
             // Retrieve the first image URL from imageURLs array
             const firstImage = product.imageURL? product.imageURL : '';
@@ -88,6 +90,7 @@ const ProductList: React.FC = () => {
                 <p className="mb-2"><strong>Status:</strong> {product.status}</p>
               </div>
             );
+          }
           })}
         </div>
       </div>

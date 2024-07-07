@@ -189,7 +189,7 @@ export const updateProductController = async (req: Request, res: Response) => {
 };
 export const createProductWithImages = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { productName, description, category, price, status, current_status, countryID, users_userID } = req.body;
+      const { productName, description, category, price, status, current_status, countryID, userId } = req.body;
       const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
   
       const newProduct = {
@@ -200,7 +200,7 @@ export const createProductWithImages = async (req: Request, res: Response): Prom
         status,
         current_status,
         countryID,
-        users_userID,
+       users_userID: userId,
       };
   
      

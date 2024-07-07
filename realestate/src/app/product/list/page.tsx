@@ -47,6 +47,7 @@ export default function ListProduct() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+   if(localStorage.getItem("token")){
     try {
       const formData = new FormData();
       formData.append('productName', product.productName);
@@ -56,20 +57,29 @@ export default function ListProduct() {
       formData.append('countryID', product.countryID);
       formData.append('status', product.status);
       formData.append('current_status', product.current_status);
-      formData.append('userId', product.userId);
+      
 
       images.forEach((image, index) => {
         formData.append('images', image);
       });
 
-      const response = await axios.post('http://localhost:5000/api/products/add', formData);
+      const response = await axios.post('http://localhost:5000/api/products/add', formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       console.log('Response from server:', response.data);
+      alert("product added succesfully");
       // Handle success or navigate to another page
     } catch (error) {
       console.error('Error adding product:', error);
       // Handle error, e.g., display an error message to the user
       alert('Failed to add product. Please try again later.');
     }
+   }
+   
   };
 
   // JSX structure

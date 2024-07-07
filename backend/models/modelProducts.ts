@@ -144,8 +144,37 @@ const updateCurrentStatusProductToAvailable = async (productID: number): Promise
         ['available', productID]
     );
 };
+const addProducts = async (product: Product): Promise<number> => {
+    try {
+      await pool.query('START TRANSACTION');
+  
+      const [result] = await pool.query<ResultSetHeader>(
+        `
+        INSERT INTO products (productName, description, category, price, countryID, status, current_status, users_userID)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          product.productName,
+          product.description,
+          product.category,
+          product.price,
+          product.countryID,
+          product.status,
+          product.current_status,
+          product.users_userID
+        ]
+      );
+  
+      await pool.query('COMMIT');
+  
+      return result.insertId;
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      throw error;
+    }
+  };
 export { getProducts,getImagesByProductID, getProductByID, 
     Product,deleteProduct,deleteImagesOfProduct,getProductsOfUser,
     updateCurrentStatusProductToRented,updateCurrentStatusProductToSold,
     updateProduct,addImageForProduct,findImageByURLAndProductID,deleteImageByID,
-    updateCurrentStatusProductToAvailable };
+    updateCurrentStatusProductToAvailable,addProducts };

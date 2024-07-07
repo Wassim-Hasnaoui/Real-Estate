@@ -1,5 +1,5 @@
 import express from 'express';
-import { addImagesForProduct, DeleteImage, DeleteProduct, 
+import { addImagesForProduct, createProductWithImages, DeleteImage, DeleteProduct, 
     fetchProducts,fetshOneProduct, GetProductsOfUser, 
     markProductAsAvailable, updateProductController, 
     UpdateProductCurrentStatusToRented, UpdateProductCurrentStatusToSold } 
@@ -31,4 +31,5 @@ router.put("/update/:productID",updateProductController)
 router.delete("/delete/image/:imageID",DeleteImage)
 router.post("/add/images/:productID",upload.fields([{ name: 'images', maxCount: 10 }]),addImagesForProduct)
 router.post("/available/:productID",markProductAsAvailable)
+router.post('/add', upload.fields([{ name: 'images', maxCount: 10 }]), createProductWithImages);
 export default router

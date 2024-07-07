@@ -8,7 +8,8 @@ import {  getProductByID, getProducts, Product,getImagesByProductID
     findImageByURLAndProductID,
     addImageForProduct,
     deleteImageByID,
-    updateCurrentStatusProductToAvailable
+    updateCurrentStatusProductToAvailable,
+    addProducts
  } from '../models/modelProducts';
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -186,3 +187,39 @@ export const updateProductController = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to update product status', error });
     }
 };
+export const createProductWithImages = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { productName, description, category, price, status, current_status, countryID, users_userID } = req.body;
+      const imageFiles = req.files as { [fieldname: string]: Express.Multer.File[] };
+  
+      const newProduct = {
+        productName,
+        description,
+        category,
+        price,
+        status,
+        current_status,
+        countryID,
+        users_userID,
+      };
+  
+     
+      const insertedProductID = await addProducts(newProduct);
+  
+      if (imageFiles && imageFiles.images) {
+        for (const file of imageFiles.images) {
+          const imageURL = file.path;
+          await addImageForProduct(insertedProductID, imageURL);
+        }
+      }
+  
+    
+   
+  
+      res.status(200).json({ success: true, message: 'Product and images added successfully' });
+    }
+      catch (error) {
+      console.log('Error creating product with images:', error);
+      res.status(500).json({ success: false, message: 'Failed to add product with images', error: error });
+    }
+}

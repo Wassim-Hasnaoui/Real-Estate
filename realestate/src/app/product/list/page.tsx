@@ -21,7 +21,6 @@ export default function ListProduct() {
   });
 
   const [images, setImages] = useState<File[]>([]);
-
   const [fileInputs, setFileInputs] = useState<number[]>([0]); // Array to keep track of file input fields
 
   // Event handlers
@@ -33,11 +32,15 @@ export default function ListProduct() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const files: FileList | null = e.target.files;
     if (files) {
-      const selectedFiles: File[] = Array.from(files);
-      setImages(selectedFiles);
+      const selectedFile = files[0];
+      setImages((prevImages) => {
+        const newImages = [...prevImages];
+        newImages[index] = selectedFile;
+        return newImages;
+      });
     }
   };
 
@@ -59,11 +62,13 @@ export default function ListProduct() {
       formData.append('userId', product.userId);
 
       images.forEach((image, index) => {
-        formData.append('images', image);
+        formData.append(`images`, image); // 'images' is the key expected by the backend
       });
 
       const response = await axios.post('http://localhost:5000/api/products/add', formData);
       console.log('Response from server:', response.data);
+      console.log('Product added:', product);
+      console.log('Images added:', images); // Log the images array
       // Handle success or navigate to another page
     } catch (error) {
       console.error('Error adding product:', error);
@@ -171,7 +176,7 @@ export default function ListProduct() {
             <label className="block text-gray-700">Upload Image {index + 1}</label>
             <input
               type="file"
-              onChange={handleImageChange}
+              onChange={handleImageChange(index)}
               className="w-full px-3 py-2 border rounded"
               required
             />

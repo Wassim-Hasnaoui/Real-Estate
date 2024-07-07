@@ -12,9 +12,9 @@ interface Product {
   description: string;
   category: string;
   price: number;
-  countryId: string;
+  countryName: string;
   status: string;
-  currentStatus: string;
+  current_status: string;
   userId: string;
   images: object[]
 }
@@ -62,7 +62,43 @@ const ProductDetails: React.FC = () => {
   if (!product) {
     return <p>Loading...</p>;
   }
-
+const buyOrRentTheProduct=async (productID:number)=>{
+  const token=localStorage.getItem("token");
+  console.log("token is ",token);
+  
+  if(token){
+    console.log("enter");
+    
+if(product.status==="rent"){
+  const response= await axios.post(`http://localhost:5000/api/products/rented/${productID}`)
+  if(response.data.success){
+    alert("you rent this product succesfully");
+  }
+  else{
+    alert("you cant rent this product");
+  }
+}
+else{
+  
+  const response= await axios.post(`http://localhost:5000/api/products/sold/${productID}`,{},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  if(response.data.success){
+    alert("you sold this product succesfully");
+  }
+  else{
+    alert("you cant sold this product");
+  }
+}
+  }
+  else {
+    alert("please login first");
+  }
+}
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -134,12 +170,14 @@ const ProductDetails: React.FC = () => {
           <p className="mb-2">{product.description}</p>
           <p className="mb-2"><strong>Category:</strong> {product.category}</p>
           <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
-          <p className="mb-2"><strong>Country ID:</strong> {product.countryId}</p>
+          <p className="mb-2"><strong>country Name:</strong> {product.countryName}</p>
           <p className="mb-2"><strong>Status:</strong> {product.status}</p>
-          <p className="mb-2"><strong>Current Status:</strong> {product.currentStatus}</p>
+          <p className="mb-2"><strong>Current Status:</strong> {product.current_status}</p>
           <p className="mb-2"><strong>User ID:</strong> {product.userId}</p>
+         
         </motion.div>
       </div>
+      <button onClick={()=>buyOrRentTheProduct(product.productID)} className="mb-2">{product.status==="rent"?"rented this product":"buy this product"}</button>
     </div>
   );
 }

@@ -1,0 +1,98 @@
+.profileContainer {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .userDetails {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .userImage {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 10px;
+  }
+  
+  .filterButtons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .filterButtons button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    transition: background-color 0.3s ease;
+  }
+  
+  .filterButtons button:hover {
+    background-color: #0056b3;
+  }
+  
+  .productList {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .productItem {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .productImage {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  
+  .productButtons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .productButtons button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: #fff;
+    transition: background-color 0.3s ease;
+  }
+  
+  .productButtons button:hover {
+    background-color: #218838;
+  }
+  
+  .productButtons button:nth-child(2) {
+    background-color: #ffc107;
+  }
+  
+  .productButtons button:nth-child(2):hover {
+    background-color: #e0a800;
+  }
+  
+  .productButtons button:nth-child(3) {
+    background-color: #dc3545;
+  }
+  
+  .productButtons button:nth-child(3):hover {
+    background-color: #c82333;
+  }
+  

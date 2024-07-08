@@ -11,10 +11,9 @@ const ProductUpdatePage = () => {
   const [images, setImages] = useState<Images[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [formData, setFormData] = useState<Partial<Product>>({});
-  const fetchProduct = async () => {
 
+  const fetchProduct = async () => {
     console.log("idpro, ",productID);
-    
     try{
       const response = await axios.get(`http://localhost:5000/api/products/one/${productID}`);
       setProduct(response.data);
@@ -66,22 +65,9 @@ await axios.post(`http://localhost:5000/api/products/add/images/${productID}`,da
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const data = new FormData();
-    data.append('productName', formData.productName || '');
-    data.append('description', formData.description || '');
-    data.append('category', formData.category || '');
-    data.append('price', (formData.price || '').toString());
-    data.append('status', formData.status || '');
-    data.append('current_status', formData.current_status || '');
-    data.append('countryID', (formData.countryID || '').toString());
-    data.append('users_userID', (formData.users_userID || '').toString());
-
-    
-    console.log("data is ",data);
-    
+       
     try {
-      await axios.put(`http://localhost:5000/api/products/update/${productID}`, data,);
+      await axios.put(`http://localhost:5000/api/products/update/${productID}`,formData);
       alert('Product updated successfully');
     } catch (error) {
       console.error('Error updating product:', error);

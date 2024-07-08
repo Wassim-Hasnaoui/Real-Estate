@@ -11,6 +11,8 @@ import {  getProductByID, getProducts, Product,getImagesByProductID
     updateCurrentStatusProductToAvailable,
     addProducts
  } from '../models/modelProducts';
+
+
 export const fetchProducts = async (req: Request, res: Response): Promise<void> => {
     try {
         const products = await getProducts();
@@ -102,9 +104,6 @@ export const UpdateProductCurrentStatusToRented = async (req: Request, res: Resp
 export const updateProductController = async (req: Request, res: Response) => {
     const productID = parseInt(req.params.productID);
     const productData = req.body;
-    
-  
-  
     try {
       const existingProduct = await getProductByID(productID);
       if (!existingProduct) {

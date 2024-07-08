@@ -1,7 +1,10 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';;
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import styles from './Profile.module.css';
+import Navbar from '../navbar';
 
 interface Product {
   productID: number;
@@ -29,6 +32,7 @@ const Profile = () => {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all'); 
   const router = useRouter();
+
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem('token');
@@ -76,13 +80,14 @@ const Profile = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
   const handleDeleteProduct = async (productID: number) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this product?');
     if (!confirmDelete) {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/products/remove/${productID}`,{
+      await axios.delete(`http://localhost:5000/api/products/remove/${productID}`, {
       });
       setProducts(products.filter(product => product.productID !== productID));
       alert('Product deleted successfully');
@@ -91,9 +96,11 @@ const Profile = () => {
       setError('Failed to delete product');
     }
   };
+
   const handleUpdateProduct = (productID: number) => {
     router.push(`/updateProduct/${productID}`);
   };
+
   const handleMarkAsAvailable = async (productID: number) => {
     try {
       await axios.post(`http://localhost:5000/api/products/available/${productID}`);
@@ -109,55 +116,79 @@ const Profile = () => {
       setError('Failed to update product status');
     }
   };
+
   const handleFilterChange = (newFilter: string) => {
     setFilter(newFilter);
   };
+
   return (
-    
-    <div>
-      <h1>Profile</h1>
+    <div className={styles.profileContainer}>
+      <Navbar />
+      <motion.h1 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        Profile
+      </motion.h1>
       {user && (
-        <div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className={styles.userDetails}
+        >
           <h2>User Details</h2>
           <p>Username: {user.userName}</p>
           <p>Phone: {user.phone}</p>
           <p>Email: {user.email}</p>
-          {user.image && <img src={user.image} alt="User Image" style={{ width: '100px', height: '100px' }} />}
-        </div>
+          {user.image && <img src={user.image} alt="User Image" className={styles.userImage} />}
+        </motion.div>
       )}
 
       <h2>User Products</h2>
-      <div>
+      <div className={styles.filterButtons}>
         <button onClick={() => handleFilterChange('all')}>All</button>
         <button onClick={() => handleFilterChange('available')}>Available</button>
         <button onClick={() => handleFilterChange('rented')}>Rented</button>
         <button onClick={() => handleFilterChange('sold')}>Sold</button>
       </div>
       {products.length > 0 ? (
-        <ul>
+        <motion.ul 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className={styles.productList}
+        >
           {products.map((product) => {
-         if(filter==="all"||product.current_status===filter){
-         return(
-           <li key={product.productID}>
-              <h3>{product.productName}</h3>
-              <p>{product.description}</p>
-              <p>Category: {product.category}</p>
-              <p>Price: ${product.price}</p>
-              <p>Country: {product.countryName}</p>
-              <p>Status: {product.status}</p>
-              <p>Current Status: {product.current_status}</p>
-              {product.imageURL && <img src={`http://localhost:5000/api/products/${product.imageURL}`} alt={product.productName} style={{ width: '100px', height: '100px' }} />}
-              <button onClick={() => handleDeleteProduct(product.productID)}>Delete</button>
-              <button onClick={() => handleUpdateProduct(product.productID)}>Update</button>
-              {product.current_status === 'sold' && (
-                <button onClick={() => handleMarkAsAvailable(product.productID)}>Mark as Available</button>
-              )}
-            </li>
-           )
-        }
-})}
-        </ul>
-      ):(
+            if (filter === "all" || product.current_status === filter) {
+              return (
+                <motion.li 
+                  key={product.productID}
+                  whileHover={{ scale: 1.05 }}
+                  className={styles.productItem}
+                >
+                  <h3>{product.productName}</h3>
+                  <p>{product.description}</p>
+                  <p>Category: {product.category}</p>
+                  <p>Price: ${product.price}</p>
+                  <p>Country: {product.countryName}</p>
+                  <p>Status: {product.status}</p>
+                  <p>Current Status: {product.current_status}</p>
+                  {product.imageURL && <img src={`http://localhost:5000/api/products/${product.imageURL}`} alt={product.productName} className={styles.productImage} />}
+                  <div className={styles.productButtons}>
+                    <button onClick={() => handleDeleteProduct(product.productID)}>Delete</button>
+                    <button onClick={() => handleUpdateProduct(product.productID)}>Update</button>
+                    {product.current_status === 'sold' && (
+                      <button onClick={() => handleMarkAsAvailable(product.productID)}>Mark as Available</button>
+                    )}
+                  </div>
+                </motion.li>
+              );
+            }
+          })}
+        </motion.ul>
+      ) : (
         <p>No products found.</p>
       )}
     </div>

@@ -44,7 +44,7 @@ export default function userLogin () {
            console.log('form is ',form);
            
            
-            const response = await axios.post('http://localhost:5000/api/user/register',form,{
+            const response = await axios.post('http://localhost:5000/api/users/register',form,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

@@ -5,7 +5,7 @@ import './ContactUs.css';
 import emailjs from 'emailjs-com';
 
 const serviceId = 'service_x56kjyg';
-const templateId = 'template_usu6k3z'; // Updated template ID
+const templateId = 'template_qr2g7ym'; // Updated template ID
 const publicKey = 'NG8Dae7FPYRUUdwCE';
 
 const ContactUs: React.FC = () => {
@@ -48,7 +48,7 @@ const ContactUs: React.FC = () => {
 
     return (
         <div className="ContactUs">
-            <h1>Contact Us:</h1>
+            <h1><strong>Contact Us:</strong></h1>
             <form onSubmit={handleSubmit} className="ContactForm">
                 <label>
                     First Name:

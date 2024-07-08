@@ -5,19 +5,20 @@ import Navbar from '@/app/navbar'; // Adjust path to your Navbar component
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
-// Define Product interface
+//Define Product interface
 interface Product {
   productID: number;
   productName: string;
   description: string;
   category: string;
   price: number;
-  countryId: string;
+  countryName: string;
   status: string;
-  current_status: string; // Changed to current_status
-  userID: string;
-  images?: string[]; // Updated to images for the array of image paths or identifiers
+  current_status: string;
+  userId: string;
+  images: object[]
 }
+
 
 // ProductDetails component
 const ProductDetails: React.FC = () => {
@@ -32,9 +33,11 @@ const ProductDetails: React.FC = () => {
         console.log('Extracted productId from URL:', productId);
 
         if (productId) {
-          const response = await axios.get<Product>(`http://localhost:5000/api/products/${productId}`);
+          const response = await axios.get(`http://localhost:5000/api/products/one/${productId}`);
           console.log('Fetched product:', response.data);
           setProduct(response.data);
+          console.log("images",response.data.images);
+          
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -42,7 +45,7 @@ const ProductDetails: React.FC = () => {
     };
 
     fetchProduct();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   const nextImage = () => {
     if (product && product.images && product.images.length > 0) {
@@ -59,7 +62,43 @@ const ProductDetails: React.FC = () => {
   if (!product) {
     return <p>Loading...</p>;
   }
-
+const buyOrRentTheProduct=async (productID:number)=>{
+  const token=localStorage.getItem("token");
+  console.log("token is ",token);
+  
+  if(token){
+    console.log("enter");
+    
+if(product.status==="rent"){
+  const response= await axios.post(`http://localhost:5000/api/products/rented/${productID}`)
+  if(response.data.success){
+    alert("you rent this product succesfully");
+  }
+  else{
+    alert("you cant rent this product");
+  }
+}
+else{
+  
+  const response= await axios.post(`http://localhost:5000/api/products/sold/${productID}`,{},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  if(response.data.success){
+    alert("you sold this product succesfully");
+  }
+  else{
+    alert("you cant sold this product");
+  }
+}
+  }
+  else {
+    alert("please login first");
+  }
+}
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -72,7 +111,7 @@ const ProductDetails: React.FC = () => {
           <div className="relative w-full max-w-md mx-auto">
             {product.images && product.images.length > 0 && (
               <motion.img
-                src={product.images[currentImageIndex]}
+                src={ `http://localhost:5000/api/products/${product.images[currentImageIndex].imageURL}`}
                 alt={product.productName}
                 className="w-full h-auto rounded-lg shadow-lg object-cover"
                 initial={{ opacity: 0 }}
@@ -108,7 +147,7 @@ const ProductDetails: React.FC = () => {
             {product.images && product.images.map((imagePath, index) => (
               <img
                 key={index}
-                src={imagePath}
+                src={ `http://localhost:5000/api/products/${imagePath.imageURL}`}
                 alt={product.productName}
                 className={`w-16 h-16 rounded-lg cursor-pointer ${
                   index === currentImageIndex ? 'border-2 border-blue-500' : ''
@@ -128,16 +167,17 @@ const ProductDetails: React.FC = () => {
           whileHover={{ scale: 1.05 }}
         >
           <h2 className="text-xl font-semibold mb-2">{product.productName}</h2>
-          <p className="mb-4">{product.description}</p>
-          
-          <p className="mt-4"><strong>Category:</strong> {product.category}</p>
-          <p><strong>Price:</strong> ${product.price}</p>
-          <p><strong>Country ID:</strong> {product.countryId}</p>
-          <p><strong>Status:</strong> {product.status}</p>
-          <p><strong>Current Status:</strong> {product.current_status}</p>
-          <p><strong>User ID:</strong> {product.userID}</p>
+          <p className="mb-2">{product.description}</p>
+          <p className="mb-2"><strong>Category:</strong> {product.category}</p>
+          <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
+          <p className="mb-2"><strong>country Name:</strong> {product.countryName}</p>
+          <p className="mb-2"><strong>Status:</strong> {product.status}</p>
+          <p className="mb-2"><strong>Current Status:</strong> {product.current_status}</p>
+          <p className="mb-2"><strong>User ID:</strong> {product.userId}</p>
+         
         </motion.div>
       </div>
+      <button onClick={()=>buyOrRentTheProduct(product.productID)} className="mb-2">{product.status==="rent"?"rented this product":"buy this product"}</button>
     </div>
   );
 }

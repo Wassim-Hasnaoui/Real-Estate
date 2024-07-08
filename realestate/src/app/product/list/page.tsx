@@ -17,7 +17,7 @@ export default function ListProduct() {
     countryID: '',
     status: '',
     current_status: '',
-    userId: ''
+    users_userId: ''
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -50,6 +50,7 @@ export default function ListProduct() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+   if(localStorage.getItem("token")){
     try {
       const formData = new FormData();
       formData.append('productName', product.productName);
@@ -59,13 +60,19 @@ export default function ListProduct() {
       formData.append('countryID', product.countryID);
       formData.append('status', product.status);
       formData.append('current_status', product.current_status);
-      formData.append('userId', product.userId);
+      
 
       images.forEach((image, index) => {
         formData.append(`images`, image); // 'images' is the key expected by the backend
       });
 
-      const response = await axios.post('http://localhost:5000/api/products/add', formData);
+      const response = await axios.post('http://localhost:5000/api/products/add', formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       console.log('Response from server:', response.data);
       console.log('Product added:', product);
       console.log('Images added:', images); // Log the images array
@@ -75,6 +82,8 @@ export default function ListProduct() {
       // Handle error, e.g., display an error message to the user
       alert('Failed to add product. Please try again later.');
     }
+   }
+   
   };
 
   // JSX structure

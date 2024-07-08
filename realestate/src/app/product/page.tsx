@@ -6,11 +6,13 @@ import axios from 'axios';
 import Navbar from '../navbar';
 
 interface Product {
-  productID: string;
+  productID: number;
   productName: string;
   price: number;
   status: string;
-  imageURLs: string[]; // imageURLs is an array of strings
+  description:string;
+  imageURL: string; 
+  current_status:string
 }
 
 const ProductList: React.FC = () => {
@@ -32,7 +34,7 @@ const ProductList: React.FC = () => {
   }, []);
 
   // Function to handle clicking on a product
-  const handleProductClick = (productID: string) => {
+  const handleProductClick = (productID: number) => {
     console.log('Navigating to product details for productID:', productID);
     if (productID) {
       router.push(`/product/${productID}`);
@@ -56,14 +58,14 @@ const ProductList: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => {
+            if(product.current_status!=="sold"){
             console.log('Product:', product);
             // Retrieve the first image URL from imageURLs array
-            const firstImage = product.imageURLs.length > 0 ? product.imageURLs[0] : '';
+            const firstImage = product.imageURL? product.imageURL : '';
             console.log(`First image path: ${firstImage}`);
 
             // Replace backslashes with forward slashes if necessary
-            const correctedImageURL = firstImage.replace(/\\/g, '/');
-            console.log(`Corrected image path: ${correctedImageURL}`);
+          
 
             return (
               <div
@@ -77,17 +79,18 @@ const ProductList: React.FC = () => {
                 <h2 className="text-xl font-semibold mb-2">{product.productName}</h2>
                 {firstImage && (
                   <img
-                    src={`/products/${correctedImageURL}`}
+                    src={`http://localhost:5000/api/products/${product.imageURL}`}
                     alt={product.productName}
                     className="mb-2 rounded-md"
                     style={{ maxWidth: '100%', height: 'auto' }}
-                    onError={() => console.error(`Failed to load image URL: ${correctedImageURL}`)}
+                   
                   />
                 )}
                 <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
                 <p className="mb-2"><strong>Status:</strong> {product.status}</p>
               </div>
             );
+          }
           })}
         </div>
       </div>

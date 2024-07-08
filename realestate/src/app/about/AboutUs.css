@@ -1,0 +1,90 @@
+/* General styles */
+.AboutUs {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Heading styles */
+.AboutUs h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 36px;
+    color: #333;
+    animation: fadeInDown 1s ease-in-out;
+}
+
+/* Section styles */
+section {
+    margin-bottom: 40px;
+}
+
+/* Subheading styles */
+h2 {
+    font-size: 28px;
+    color: #444;
+    margin-bottom: 10px;
+    animation: fadeInUp 1s ease-in-out;
+}
+
+/* Paragraph and list styles */
+p, ul {
+    font-size: 18px;
+    color: #666;
+    line-height: 1.6;
+    animation: fadeIn 1s ease-in-out;
+}
+
+ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+ul li {
+    margin-bottom: 10px;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Image container styles */
+.image-container {
+    text-align: center; /* Center align images */
+    margin-top: 20px; /* Add margin above each image */
+}
+
+.animated-image {
+    max-width: 100%; /* Ensure images don't exceed their container width */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 8px; /* Optional: Add rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+    animation: fadeIn 1s ease-in-out; /* Apply fadeIn animation */
+}
